@@ -27,14 +27,56 @@ public class LexicalAnalyser
     private Token getToken()
     {
         // Consome quaisquer espacos que estejam presentes a partir do indice atual
-
+        while (Character.isWhitespace(input.charAt(index)))
+        {
+            index++;
+        }
+        
+        if (input.charAt(index) == '$')
+        {
+            return null;
+        }
+        
         // Verifica se encontrou um operador, retornando o mesmo na forma de token
+        if (input.charAt(index) == '+' || input.charAt(index) == '*' || 
+            input.charAt(index) == '(' || input.charAt(index) == ')')
+        {
+            return new Token(input.charAt(index++));
+        }
+        
         // Caso contrario...
         // Verifica se e um digito, analisando ate o final de um numero valido
-        // Repete verificacao para obter toda a parte inteira do numero
-        // Se encontrar um ponto, tenta obter parte fracionaria do mesmo
+        if (Character.isDigit(input.charAt(index)))
+        {
+            int start = index;
+            index++;
+            
+            // Repete verificacao para obter toda a parte inteira do numero
+            while (Character.isDigit(input.charAt(index)))
+            {                
+                index++;
+            }
+            
+            // Se encontrar um ponto, tenta obter parte fracionaria do mesmo
+            if (input.charAt(index) == '.')
+            {
+                index++;
+                if (Character.isDigit(input.charAt(index)))
+                {
+                    index++;
+                    while (Character.isDigit(input.charAt(index)))
+                    {
+                        index++;
+                    }
+                }
+            }
         // Converte o trecho da input que contem o numero para um
         // valor "double" e retorna um token numerico
+        return new Token(Double.parseDouble(input.substring(start, index)));
+        
+        }
+        return null;
+        
     }
 
     /* Metodo que efetua toda a analise, repetindo a leitura de tokens
