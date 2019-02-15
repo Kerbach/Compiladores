@@ -1,4 +1,4 @@
-package compiladores;
+package aula01;
 
 /* Classe simples que representa um token
  */
