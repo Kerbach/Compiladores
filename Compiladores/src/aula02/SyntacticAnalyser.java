@@ -77,5 +77,10 @@ public class SyntacticAnalyser
                 System.exit(1);
             }
         }
+        else
+        {
+            System.err.println("Falha2!");
+            System.exit(1);
+        }
     }
 }
