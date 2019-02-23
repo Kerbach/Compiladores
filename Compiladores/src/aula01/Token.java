@@ -5,7 +5,7 @@ package aula01;
 public class Token
 {
 
-    private char type;    // tipo do token
+    public char type;    // tipo do token
     private double value; // valor do token numerico, para tipo "n"
 
     // Construtor de um token de operador, pois recebe apenas o tipo
