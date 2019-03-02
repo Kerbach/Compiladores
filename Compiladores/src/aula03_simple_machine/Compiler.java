@@ -1,4 +1,4 @@
-package aula02;
+package aula03_simple_machine;
 
 import aula01.Token;
 import java.util.ArrayList;
@@ -6,12 +6,12 @@ import java.util.ArrayList;
 /* Implementa um analisador sintatico descendente recursivo para
  * expressoes aritmeticas
  */
-public class SyntacticAnalyser
+public class Compiler
 {
 
     private ArrayList<Token> tokens; // vetor de tokens da analise lexica
 
-    public SyntacticAnalyser(ArrayList<Token> tokens)
+    public Compiler(ArrayList<Token> tokens)
     {
         this.tokens = tokens;
     }
@@ -24,7 +24,8 @@ public class SyntacticAnalyser
         {
             System.err.println("Error: unprocessed tokens left");
             System.err.println("Remaining tokens: " + this.tokens);
-        } else
+        }
+        else
         {
             System.out.println("Expression correct!");
         }
@@ -38,6 +39,7 @@ public class SyntacticAnalyser
         {
             this.tokens.remove(0);
             E();
+            System.out.println("ADD");
         }
     }
 
@@ -49,6 +51,7 @@ public class SyntacticAnalyser
         {
             this.tokens.remove(0);
             T();
+            System.out.println("MUL");
         }
     }
 
@@ -57,20 +60,28 @@ public class SyntacticAnalyser
     {
         if (this.tokens.get(0).getType() == 'n')
         {
+            // Imprime o valor na tela
+            System.out.println(this.tokens.get(0).getValue());
+
+            // remove do token
             this.tokens.remove(0);
-        } else if (this.tokens.get(0).getType() == '(')
+
+        }
+        else if (this.tokens.get(0).getType() == '(')
         {
             this.tokens.remove(0);
             E();
             if (this.tokens.get(0).getType() == ')')
             {
                 this.tokens.remove(0);
-            } else
+            }
+            else
             {
                 System.err.println("Error: missing ')'");
                 System.exit(1);
             }
-        } else
+        }
+        else
         {
             System.err.println("Error: unexpected token");
             System.exit(1);
