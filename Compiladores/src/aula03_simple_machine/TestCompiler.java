@@ -1,5 +1,6 @@
 package aula03_simple_machine;
 
+import aula04.Bytecode;
 import aula01.LexicalAnalyser;
 import aula01.Token;
 import java.util.ArrayList;
