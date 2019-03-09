@@ -33,26 +33,40 @@ public class Interpreter
         }
     }
 
-    // Metodo que implementa a regra E -> T | T + E
+    // Metodo que implementa a regra E -> T | T ( (+|-) T ) *
     private double E()
     {
         double v = T();
-        if (this.tokens.get(0).getType() == '+')
+        while (this.tokens.get(0).getType() == '+' || this.tokens.get(0).getType() == '-')
         {
-            this.tokens.remove(0);
-            v += E();
+            Token t = this.tokens.remove(0);
+            if (t.getType() == '+')
+            {
+                v += E();
+            }
+            else
+            {
+                v -= E();
+            }
         }
         return v;
     }
 
-    // Metodo que implementa a regra T -> F | F * T
+    // Metodo que implementa a regra T -> F ( (*|/) F )*
     private double T()
     {
         double v = F();
-        if (this.tokens.get(0).getType() == '*')
+        while (this.tokens.get(0).getType() == '/' || this.tokens.get(0).getType() == '*')
         {
-            this.tokens.remove(0);
-            v *= T();
+            Token t = this.tokens.remove(0);
+            if (t.getType() == '*')
+            {
+                v *= F();
+            }
+            else
+            {
+                v /= F();
+            }
         }
         return v;
     }

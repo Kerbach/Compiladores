@@ -38,7 +38,8 @@ public class LexicalAnalyser
         }
         
         // Verifica se encontrou um operador, retornando o mesmo na forma de token
-        if (input.charAt(index) == '+' || input.charAt(index) == '*' || 
+        if (input.charAt(index) == '+' || input.charAt(index) == '-' || 
+            input.charAt(index) == '*' || input.charAt(index) == '/' || 
             input.charAt(index) == '(' || input.charAt(index) == ')')
         {
             return new Token(input.charAt(index++));

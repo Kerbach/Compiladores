@@ -8,13 +8,13 @@ public class TestCompiler
 {
     public static void main(String[] args)
     {
-        String exp = "1+(2*3)";
+        String exp = "1+2+3";
         System.out.println("Input: '" + exp + "'");
 
         LexicalAnalyser la = new LexicalAnalyser(exp);
         ArrayList<Token> tokens = la.run();
 
-        Compiler sa = new Compiler(tokens);
+        Bytecode sa = new Bytecode(tokens);
         sa.run();
     }
 }
