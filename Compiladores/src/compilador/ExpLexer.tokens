@@ -1,0 +1,14 @@
+PLUS=1
+MINUS=2
+TIMES=3
+OVER=4
+OP_PAR=5
+CL_PAR=6
+NUMBER=7
+SPACE=8
+'+'=1
+'-'=2
+'*'=3
+'/'=4
+'('=5
+')'=6
