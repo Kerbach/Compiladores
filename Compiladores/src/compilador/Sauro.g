@@ -1,22 +1,13 @@
-grammar Exp;
+grammar Sauro;
 
 /*
-java -jar .\antlr-4.7.2.jar Exp.g
-C:"\Program Files\Java\jdk1.8.0_191\bin\javac.exe" -cp antlr-4.7.2.jar Exp*.java
-C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" -cp "antlr-4.7.2.jar;." ExpParser
+COMANDOS TERMINAL
 
+        C:
+        cd C:\Users\wrkerber\Documents\NetBeansProjects\Compiladores\Compiladores\src\compilador
+        1_build.bat
+        2_compile.bat teste.dino
 
-1 + 2 * 3
-^Z
-
-Resultado:
-1
-2
-3
-
-
-C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" -cp "antlr-4.7.2.jar;." ExpParser < input.txt > Test.j
-C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" -jar jasmin-2.4.jar Test.j
 */
 
 /*---------------- PARSER INTERNALS ----------------*/
@@ -33,9 +24,9 @@ C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" -jar jasmin-2.4.jar Test.j
     public static void main(String[] args) throws Exception
     {
         CharStream input = CharStreams.fromStream(System.in);
-        ExpLexer lexer = new ExpLexer(input);
+        SauroLexer lexer = new SauroLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        ExpParser parser = new ExpParser(tokens);
+        SauroParser parser = new SauroParser(tokens);
 
         //symbol_table = new ArrayList<String>();
         parser.program();
@@ -45,14 +36,19 @@ C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" -jar jasmin-2.4.jar Test.j
 
 /*---------------- LEXER RULES ----------------*/
 
-PLUS  : '+' ;
-MINUS : '-' ;
-TIMES : '*' ;
-OVER  : '/' ;
-OP_PAR: '(' ;
-CL_PAR: ')' ;
+PLUS        : '+' ;
+MINUS       : '-' ;
+TIMES       : '*' ;
+OVER        : '/' ;
+REMAINDER   : '%' ;
+OP_PAR      : '(' ;
+CL_PAR      : ')' ;
+ATTRIB       : '=';
 
-NUMBER: '0'..'9'+ ;
+PRINT       : 'print' ;
+
+NUMBER      : '0'..'9'+ ;
+VAR         : 'a'..'z'+ ;
 
 SPACE : (' '|'\t'|'\r'|'\n')+ { skip(); } ;
 
@@ -76,35 +72,51 @@ program
 main
     :   {
             System.out.println("\n.method public static main([Ljava/lang/String;)V");
-            System.out.println("\n    getstatic java/lang/System/out Ljava/io/PrintStream; \n");
         }
-        expression
+        (statement)+
         {
-            System.out.println("\n    invokevirtual java/io/PrintStream/println(I)V");
-            System.out.println("\n    return\n");
+            System.out.println("    return");
+            System.out.println(".limit locals 2");
             System.out.println(".limit stack 10");
-            System.out.println(".end method");   
+            System.out.println(".end method");
         }
+    ;
+
+statement
+    : st_print | st_attrib
+    ;
+
+st_print
+    :   {System.out.println("\n    getstatic java/lang/System/out Ljava/io/PrintStream;");}
+        PRINT OP_PAR expression CL_PAR   
+        {System.out.println("\n    invokevirtual java/io/PrintStream/println(I)V\n");}
+    ;
+st_attrib
+    :
+        VAR ATTRIB expression
+        {System.out.println("    istore 1\n");}
     ;
 
 expression
     :   term ( op = ( PLUS | MINUS ) term 
-            {System.out.println(($op.type == PLUS) ? "   iadd" : "   isub");} 
+            {System.out.println(($op.type == PLUS) ? "    iadd" : "    isub");} 
         )*
     ;
 
 term
     :   factor ( op = ( TIMES | OVER | REMAINDER ) factor 
             { 
-                if      ($op.type == TIMES) {System.out.println("   imul");}    
-                else if ($op.type == OVER)  {System.out.println("   idiv");}    
-                else                        {System.out.println("   irem");}    
+                if      ($op.type == TIMES) {System.out.println("    imul");}    
+                else if ($op.type == OVER)  {System.out.println("    idiv");}    
+                else                        {System.out.println("    irem");}    
             }
          )*
     ;
 
 factor
     :   NUMBER
-        { System.out.println("   ldc "+ $NUMBER.text); }
+            { System.out.println("    ldc "+ $NUMBER.text); }
     |   OP_PAR expression CL_PAR
+    |   VAR
+            { System.out.println("    iload 1"); }
     ;

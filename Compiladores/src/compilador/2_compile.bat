@@ -1,6 +1,6 @@
-echo off
+@echo off
 
-C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" -cp "antlr-4.7.2.jar;." ExpParser < %1 > Test.j
+C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" -cp "antlr-4.7.2.jar;." SauroParser < %1 > Test.j
 IF %ERRORLEVEL% EQU 0 ( 
   goto jasmin
 ) ELSE ( 
@@ -27,4 +27,4 @@ IF %ERRORLEVEL% EQU 0 (
 @echo Um erro ocorreu
 
 :sucesso
-@echo Tudo executado com sucesso!
+@echo 2_compile.bat executado com sucesso!
