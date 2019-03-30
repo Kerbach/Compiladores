@@ -89,7 +89,7 @@ main
         }
         (statement)+
         {
-            System.out.println("    return");
+            System.out.println("        return");
             System.out.println(".limit locals " + symbol_table.size());
             System.out.println(".limit stack " + stack_max);
             System.out.println(".end method");
@@ -101,9 +101,9 @@ statement
     ;
 
 st_print
-    :   {emit("\n    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);}
+    :   {emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);}
         PRINT OP_PAR expression CL_PAR   
-        {emit("\n    invokevirtual java/io/PrintStream/println(I)V\n", - 2);}
+        {emit("\n        invokevirtual java/io/PrintStream/println(I)V\n", - 2);}
     ;
 st_attrib
     :

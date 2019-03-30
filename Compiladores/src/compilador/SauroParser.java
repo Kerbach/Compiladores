@@ -219,7 +219,7 @@ public class SauroParser extends Parser {
 				_la = _input.LA(1);
 			} while ( _la==PRINT || _la==VAR );
 
-			            System.out.println("    return");
+			            System.out.println("        return");
 			            System.out.println(".limit locals " + symbol_table.size());
 			            System.out.println(".limit stack " + stack_max);
 			            System.out.println(".end method");
@@ -321,7 +321,7 @@ public class SauroParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			emit("\n    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
+			emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
 			setState(32);
 			match(PRINT);
 			setState(33);
@@ -330,7 +330,7 @@ public class SauroParser extends Parser {
 			expression();
 			setState(35);
 			match(CL_PAR);
-			emit("\n    invokevirtual java/io/PrintStream/println(I)V\n", - 2);
+			emit("\n        invokevirtual java/io/PrintStream/println(I)V\n", - 2);
 			}
 		}
 		catch (RecognitionException re) {

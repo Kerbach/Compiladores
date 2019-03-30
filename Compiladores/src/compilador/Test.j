@@ -16,17 +16,17 @@
         istore 2
 
     
-    getstatic java/lang/System/out Ljava/io/PrintStream;
+        getstatic java/lang/System/out Ljava/io/PrintStream;
         iload 1
         iload 2
         imul
     
-    invokevirtual java/io/PrintStream/println(I)V
+        invokevirtual java/io/PrintStream/println(I)V
 
         ldc 16
         istore 1
 
-    return
+        return
 .limit locals 3
 .limit stack 3
 .end method
