@@ -9,26 +9,25 @@
 .end method
 
 .method public static main([Ljava/lang/String;)V
+        ldc 4
+        istore 1
 
+        ldc 8
+        istore 2
+
+    
     getstatic java/lang/System/out Ljava/io/PrintStream;
-    ldc 1
-
+        iload 1
+        iload 2
+        imul
+    
     invokevirtual java/io/PrintStream/println(I)V
 
-    ldc 5
-    ldc 3
-    imul
-    istore 1
-
-
-    getstatic java/lang/System/out Ljava/io/PrintStream;
-    iload 1
-    ldc 15
-    isub
-
-    invokevirtual java/io/PrintStream/println(I)V
+        ldc 16
+        istore 1
 
     return
-.limit locals 2
-.limit stack 10
+.limit locals 3
+.limit stack 3
 .end method
+; symbols: [args, a, b]

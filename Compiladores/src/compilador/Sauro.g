@@ -19,7 +19,19 @@ COMANDOS TERMINAL
 
 @parser::members
 {
-    //private static ArrayList<String> symbol_table;
+    private static int stack_cur, stack_max;
+
+    public static void emit (String bytecode, int delta)
+    {
+        System.out.println("    " + bytecode);
+        stack_cur += delta;
+        if(stack_cur > stack_max)
+        {
+            stack_max = stack_cur;
+        }
+    }
+
+    private static ArrayList<String> symbol_table;
 
     public static void main(String[] args) throws Exception
     {
@@ -28,9 +40,11 @@ COMANDOS TERMINAL
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         SauroParser parser = new SauroParser(tokens);
 
-        //symbol_table = new ArrayList<String>();
+        // Tabela de Símbolos
+        symbol_table = new ArrayList<String>();
+        symbol_table.add("args");
         parser.program();
-        //System.out.println("symbols: " + symbol_table);
+        System.out.println("; symbols: " + symbol_table);
     }
 }
 
@@ -76,8 +90,8 @@ main
         (statement)+
         {
             System.out.println("    return");
-            System.out.println(".limit locals 2");
-            System.out.println(".limit stack 10");
+            System.out.println(".limit locals " + symbol_table.size());
+            System.out.println(".limit stack " + stack_max);
             System.out.println(".end method");
         }
     ;
@@ -87,36 +101,58 @@ statement
     ;
 
 st_print
-    :   {System.out.println("\n    getstatic java/lang/System/out Ljava/io/PrintStream;");}
+    :   {emit("\n    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);}
         PRINT OP_PAR expression CL_PAR   
-        {System.out.println("\n    invokevirtual java/io/PrintStream/println(I)V\n");}
+        {emit("\n    invokevirtual java/io/PrintStream/println(I)V\n", - 2);}
     ;
 st_attrib
     :
         VAR ATTRIB expression
-        {System.out.println("    istore 1\n");}
+        {
+            if (!symbol_table.contains($VAR.text))
+            {
+                symbol_table.add($VAR.text);
+            }
+            int address = symbol_table.indexOf($VAR.text);
+            
+            emit("    istore " + address + "\n", - 1);
+        }
     ;
 
 expression
     :   term ( op = ( PLUS | MINUS ) term 
-            {System.out.println(($op.type == PLUS) ? "    iadd" : "    isub");} 
+            {emit(($op.type == PLUS) ? "iadd" : "    isub", - 1);} 
         )*
     ;
 
 term
     :   factor ( op = ( TIMES | OVER | REMAINDER ) factor 
             { 
-                if      ($op.type == TIMES) {System.out.println("    imul");}    
-                else if ($op.type == OVER)  {System.out.println("    idiv");}    
-                else                        {System.out.println("    irem");}    
+                if      ($op.type == TIMES) {emit("    imul", - 1);}    
+                else if ($op.type == OVER)  {emit("    idiv", - 1);}    
+                else                        {emit("    irem", - 1);}    
             }
          )*
     ;
 
 factor
     :   NUMBER
-            { System.out.println("    ldc "+ $NUMBER.text); }
+            { emit("    ldc "+ $NUMBER.text, + 1); }
     |   OP_PAR expression CL_PAR
     |   VAR
-            { System.out.println("    iload 1"); }
+        {
+            if(!symbol_table.contains($VAR.text))
+            { 
+                System.err.println("Variable " + $VAR.text + " not declared.\n"); 
+                System.exit(1);
+            }
+            if(symbol_table.contains($VAR.text))
+            {
+                emit("    iload " + symbol_table.indexOf($VAR.text), + 1);
+            }
+            else
+            {
+                emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
+            }
+        }
     ;
