@@ -1,4 +1,4 @@
-a = 4
-b = 8
-print(a*b)
-a = 16
+# result: '2 4 8\n'
+
+a = 2
+print(a, a * a, a * a * a)

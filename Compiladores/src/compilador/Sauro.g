@@ -57,14 +57,18 @@ OVER        : '/' ;
 REMAINDER   : '%' ;
 OP_PAR      : '(' ;
 CL_PAR      : ')' ;
-ATTRIB       : '=';
+ATTRIB      : '=' ;
+COMMA       : ',' ;
 
 PRINT       : 'print' ;
+READ_INT    : 'read_int' ;
 
 NUMBER      : '0'..'9'+ ;
 VAR         : 'a'..'z'+ ;
 
-SPACE : (' '|'\t'|'\r'|'\n')+ { skip(); } ;
+SPACE       : (' '|'\t'|'\r'|'\n')+ { skip(); } ;
+
+COMMENT     : '#' ~[\r\n]* { skip();} ;
 
 /*---------------- PARSER RULES ----------------*/
 
@@ -101,10 +105,26 @@ statement
     ;
 
 st_print
-    :   {emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);}
-        PRINT OP_PAR expression CL_PAR   
-        {emit("\n        invokevirtual java/io/PrintStream/println(I)V\n", - 2);}
+    :   PRINT OP_PAR
+        { emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); }
+        expression
+        { emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); }
+        (COMMA
+        
+        { emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); }
+        { emit("    ldc \" \" ", + 1); }
+        { emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); }
+
+        { emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); }
+        expression 
+        { emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); } 
+        )* CL_PAR
+        { 
+            emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
+            emit("    invokevirtual java/io/PrintStream/println()V", - 1);	    
+        }
     ;
+
 st_attrib
     :
         VAR ATTRIB expression
@@ -155,4 +175,9 @@ factor
                 emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
             }
         }
+    |   READ_INT OP_PAR CL_PAR
+        {
+            emit("    invokestatic Runtime/readInt()I", +1);
+        }
+        
     ;

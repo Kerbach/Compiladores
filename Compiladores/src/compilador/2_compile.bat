@@ -23,8 +23,11 @@ IF %ERRORLEVEL% EQU 0 (
   goto erro
 )
 
-:erro
-@echo Um erro ocorreu
-
 :sucesso
+echo.
 @echo 2_compile.bat executado com sucesso!
+echo.
+
+:erro
+echo.
+echo ERRORLEVEL: %ERRORLEVEL%

@@ -9,25 +9,39 @@
 .end method
 
 .method public static main([Ljava/lang/String;)V
-        ldc 4
+        ldc 2
         istore 1
 
-        ldc 8
-        istore 2
-
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        iload 1
+        invokevirtual java/io/PrintStream/print(I)V
+    
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        ldc " " 
+        invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V
     
         getstatic java/lang/System/out Ljava/io/PrintStream;
         iload 1
-        iload 2
+        iload 1
         imul
+        invokevirtual java/io/PrintStream/print(I)V
     
-        invokevirtual java/io/PrintStream/println(I)V
-
-        ldc 16
-        istore 1
-
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        ldc " " 
+        invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V
+    
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        iload 1
+        iload 1
+        imul
+        iload 1
+        imul
+        invokevirtual java/io/PrintStream/print(I)V
+    
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        invokevirtual java/io/PrintStream/println()V
         return
-.limit locals 3
-.limit stack 3
+.limit locals 2
+.limit stack 5
 .end method
-; symbols: [args, a, b]
+; symbols: [args, a]
