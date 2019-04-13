@@ -9,39 +9,30 @@
 .end method
 
 .method public static main([Ljava/lang/String;)V
-        ldc 2
-        istore 1
-
-        getstatic java/lang/System/out Ljava/io/PrintStream;
-        iload 1
-        invokevirtual java/io/PrintStream/print(I)V
+        ldc 0
+        ldc 1
     
+        if_icmpge NOT_IF_1
         getstatic java/lang/System/out Ljava/io/PrintStream;
-        ldc " " 
-        invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V
-    
-        getstatic java/lang/System/out Ljava/io/PrintStream;
-        iload 1
-        iload 1
-        imul
-        invokevirtual java/io/PrintStream/print(I)V
-    
-        getstatic java/lang/System/out Ljava/io/PrintStream;
-        ldc " " 
-        invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V
-    
-        getstatic java/lang/System/out Ljava/io/PrintStream;
-        iload 1
-        iload 1
-        imul
-        iload 1
-        imul
+        ldc 0
         invokevirtual java/io/PrintStream/print(I)V
     
         getstatic java/lang/System/out Ljava/io/PrintStream;
         invokevirtual java/io/PrintStream/println()V
+        ldc 0
+        ldc 1
+    
+        if_icmpge NOT_IF_2
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        ldc 3
+        invokevirtual java/io/PrintStream/print(I)V
+    
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        invokevirtual java/io/PrintStream/println()V
+        NOT_IF_2:
+        NOT_IF_1:
         return
-.limit locals 2
-.limit stack 5
+.limit locals 1
+.limit stack 2
 .end method
-; symbols: [args, a]
+; symbols: [args]

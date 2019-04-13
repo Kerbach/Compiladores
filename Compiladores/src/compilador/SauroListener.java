@@ -60,6 +60,26 @@ public interface SauroListener extends ParseTreeListener {
 	 */
 	void exitSt_attrib(SauroParser.St_attribContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SauroParser#st_if}.
+	 * @param ctx the parse tree
+	 */
+	void enterSt_if(SauroParser.St_ifContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#st_if}.
+	 * @param ctx the parse tree
+	 */
+	void exitSt_if(SauroParser.St_ifContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SauroParser#comparison}.
+	 * @param ctx the parse tree
+	 */
+	void enterComparison(SauroParser.ComparisonContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#comparison}.
+	 * @param ctx the parse tree
+	 */
+	void exitComparison(SauroParser.ComparisonContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SauroParser#expression}.
 	 * @param ctx the parse tree
 	 */

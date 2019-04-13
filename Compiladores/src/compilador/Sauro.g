@@ -8,6 +8,8 @@ COMANDOS TERMINAL
         1_build.bat
         2_compile.bat teste.dino
 
+        
+
 */
 
 /*---------------- PARSER INTERNALS ----------------*/
@@ -19,7 +21,7 @@ COMANDOS TERMINAL
 
 @parser::members
 {
-    private static int stack_cur, stack_max;
+    private static int stack_cur, stack_max, if_counter;
 
     public static void emit (String bytecode, int delta)
     {
@@ -49,6 +51,16 @@ COMANDOS TERMINAL
 }
 
 /*---------------- LEXER RULES ----------------*/
+
+IF          : 'if' ;
+OP_CUR      : '{' ;
+CL_CUR      : '}' ;
+EQ          : '==' ;
+NE          : '!=' ;
+GT          : '>' ;
+GE          : '>=' ;
+LT          : '<' ;
+LE          : '<=' ; 
 
 PLUS        : '+' ;
 MINUS       : '-' ;
@@ -101,47 +113,75 @@ main
     ;
 
 statement
-    : st_print | st_attrib
+    : st_print | st_attrib | st_if
     ;
 
-st_print
+st_print            // PRINT OP_PAR expression (COMMA expression )* CL_PAR
     :   PRINT OP_PAR
-        { emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); }
+            { 
+                emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
+            }
         expression
-        { emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); }
+            { 
+                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+            }
         (COMMA
-        
-        { emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); }
-        { emit("    ldc \" \" ", + 1); }
-        { emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); }
+            {
+                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
+                emit("    ldc \" \" ", + 1); 
+                emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
 
-        { emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); }
+                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
+            }
         expression 
-        { emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); } 
+            { 
+                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+            } 
         )* CL_PAR
-        { 
-            emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
-            emit("    invokevirtual java/io/PrintStream/println()V", - 1);	    
-        }
+            { 
+                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
+                emit("    invokevirtual java/io/PrintStream/println()V", - 1);	    
+            }
     ;
 
 st_attrib
-    :
-        VAR ATTRIB expression
-        {
-            if (!symbol_table.contains($VAR.text))
+    :   VAR ATTRIB expression
             {
-                symbol_table.add($VAR.text);
+                if (!symbol_table.contains($VAR.text))
+                {
+                    symbol_table.add($VAR.text);
+                }
+                int address = symbol_table.indexOf($VAR.text);
+
+                emit("    istore " + address + "\n", - 1);
             }
-            int address = symbol_table.indexOf($VAR.text);
-            
-            emit("    istore " + address + "\n", - 1);
+    ;
+
+st_if
+    :   {int if_local = ++if_counter;}
+        IF comparison OP_CUR (statement)+ CL_CUR
+            { 
+                System.out.println("        NOT_IF_" + if_local + ":"); 
+            }
+    ;
+
+comparison
+    :   expression op = ( EQ | NE | GT | GE | LT | LE) expression
+        {
+            if($op.type == EQ) { emit("\n        if_icmpne NOT_IF_" + if_counter,-2); }
+            if($op.type == NE) { emit("\n        if_icmpeq NOT_IF_" + if_counter,-2); }
+            if($op.type == LT) { emit("\n        if_icmpge NOT_IF_" + if_counter,-2); }
+            if($op.type == LE) { emit("\n        if_icmpgt NOT_IF_" + if_counter,-2); }
+            if($op.type == GT) { emit("\n        if_icmple NOT_IF_" + if_counter,-2); }
+            if($op.type == GE) { emit("\n        if_icmplt NOT_IF_" + if_counter,-2); }
         }
     ;
 
 expression
     :   term ( op = ( PLUS | MINUS ) term 
-            {emit(($op.type == PLUS) ? "iadd" : "    isub", - 1);} 
+            {
+                emit(($op.type == PLUS) ? "iadd" : "    isub", - 1);
+            } 
         )*
     ;
 
@@ -155,29 +195,31 @@ term
          )*
     ;
 
-factor
+factor              // NUMBER  |   OP_PAR expression CL_PAR |   VAR |   READ_INT OP_PAR CL_PAR
     :   NUMBER
-            { emit("    ldc "+ $NUMBER.text, + 1); }
+            { 
+                emit("    ldc "+ $NUMBER.text, + 1); 
+            }
     |   OP_PAR expression CL_PAR
     |   VAR
-        {
-            if(!symbol_table.contains($VAR.text))
-            { 
-                System.err.println("Variable " + $VAR.text + " not declared.\n"); 
-                System.exit(1);
-            }
-            if(symbol_table.contains($VAR.text))
             {
-                emit("    iload " + symbol_table.indexOf($VAR.text), + 1);
+                if(!symbol_table.contains($VAR.text))
+                { 
+                    System.err.println("Variable " + $VAR.text + " not declared.\n"); 
+                    System.exit(1);
+                }
+                if(symbol_table.contains($VAR.text))
+                {
+                    emit("    iload " + symbol_table.indexOf($VAR.text), + 1);
+                }
+                else
+                {
+                    emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
+                }
             }
-            else
-            {
-                emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
-            }
-        }
     |   READ_INT OP_PAR CL_PAR
-        {
-            emit("    invokestatic Runtime/readInt()I", +1);
-        }
+            {
+                emit("    invokestatic Runtime/readInt()I", +1);
+            }
         
     ;
