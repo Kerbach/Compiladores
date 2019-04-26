@@ -8,9 +8,28 @@ COMANDOS TERMINAL
         1_build.bat
         2_compile.bat teste.dino
 
-        
+        "C:\Program Files\Java\jdk1.8.0_191\bin\javac.exe" -cp antlr-4.7.2.jar DenterHelper.java
 
 */
+
+/*---------------- LEXER INTERNALS ----------------*/
+
+@lexer::members
+{
+    private DenterHelper denter = new DenterHelper(NL, SauroParser.INDENT,
+                                                   SauroParser.DEDENT) {
+        @Override
+        public Token pullToken() {
+            return SauroLexer.super.nextToken();
+        }
+    };
+
+    @Override
+    public Token nextToken() {
+        return denter.nextToken();
+    }
+}
+
 
 /*---------------- PARSER INTERNALS ----------------*/
 
@@ -52,6 +71,8 @@ COMANDOS TERMINAL
 
 /*---------------- LEXER RULES ----------------*/
 
+tokens {INDENT, DEDENT}
+
 IF          : 'if' ;
 OP_CUR      : '{' ;
 CL_CUR      : '}' ;
@@ -71,6 +92,7 @@ OP_PAR      : '(' ;
 CL_PAR      : ')' ;
 ATTRIB      : '=' ;
 COMMA       : ',' ;
+COLON       : ':' ;
 
 PRINT       : 'print' ;
 READ_INT    : 'read_int' ;
@@ -78,9 +100,13 @@ READ_INT    : 'read_int' ;
 NUMBER      : '0'..'9'+ ;
 VAR         : 'a'..'z'+ ;
 
-SPACE       : (' '|'\t'|'\r'|'\n')+ { skip(); } ;
-
 COMMENT     : '#' ~[\r\n]* { skip();} ;
+
+NL: ('\r'? '\n' ' '*) ;
+
+//SPACE       : (' '|'\t'|'\r'|'\n')+ { skip(); } ;
+SPACE       : (' '|'\t')+ { skip(); } ;
+
 
 /*---------------- PARSER RULES ----------------*/
 
@@ -113,7 +139,7 @@ main
     ;
 
 statement
-    : st_print | st_attrib | st_if
+    : st_print | st_attrib | st_if | NL
     ;
 
 st_print            // PRINT OP_PAR expression (COMMA expression )* CL_PAR
@@ -159,7 +185,7 @@ st_attrib
 
 st_if
     :   {int if_local = ++if_counter;}
-        IF comparison OP_CUR (statement)+ CL_CUR
+        IF comparison COLON INDENT (statement)+ DEDENT
             { 
                 System.out.println("        NOT_IF_" + if_local + ":"); 
             }
