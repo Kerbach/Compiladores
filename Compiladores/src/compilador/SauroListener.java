@@ -90,6 +90,16 @@ public interface SauroListener extends ParseTreeListener {
 	 */
 	void exitSt_while(SauroParser.St_whileContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SauroParser#comparison_while}.
+	 * @param ctx the parse tree
+	 */
+	void enterComparison_while(SauroParser.Comparison_whileContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#comparison_while}.
+	 * @param ctx the parse tree
+	 */
+	void exitComparison_while(SauroParser.Comparison_whileContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SauroParser#expression}.
 	 * @param ctx the parse tree
 	 */

@@ -26,11 +26,11 @@ public class SauroParser extends Parser {
 	public static final int
 		RULE_program = 0, RULE_main = 1, RULE_statement = 2, RULE_st_print = 3, 
 		RULE_st_attrib = 4, RULE_st_if = 5, RULE_comparison = 6, RULE_st_while = 7, 
-		RULE_expression = 8, RULE_term = 9, RULE_factor = 10;
+		RULE_comparison_while = 8, RULE_expression = 9, RULE_term = 10, RULE_factor = 11;
 	private static String[] makeRuleNames() {
 		return new String[] {
 			"program", "main", "statement", "st_print", "st_attrib", "st_if", "comparison", 
-			"st_while", "expression", "term", "factor"
+			"st_while", "comparison_while", "expression", "term", "factor"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -99,8 +99,8 @@ public class SauroParser extends Parser {
 
 
 	    private static int stack_cur, stack_max, if_counter;
-	    private static int stack_if = 0;
-	    private static int stack_while = 0;
+	    private static int if_count = 0;
+	    private static int while_count = 0;
 
 	    public static void emit (String bytecode, int delta)
 	    {
@@ -167,7 +167,7 @@ public class SauroParser extends Parser {
 			            System.out.println("    return");
 			            System.out.println(".end method");
 			        
-			setState(23);
+			setState(25);
 			main();
 			}
 		}
@@ -213,17 +213,17 @@ public class SauroParser extends Parser {
 
 			            System.out.println("\n.method public static main([Ljava/lang/String;)V");
 			        
-			setState(27); 
+			setState(29); 
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			do {
 				{
 				{
-				setState(26);
+				setState(28);
 				statement();
 				}
 				}
-				setState(29); 
+				setState(31); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << IF) | (1L << WHILE) | (1L << PRINT) | (1L << VAR) | (1L << NL))) != 0) );
@@ -278,41 +278,41 @@ public class SauroParser extends Parser {
 		StatementContext _localctx = new StatementContext(_ctx, getState());
 		enterRule(_localctx, 4, RULE_statement);
 		try {
-			setState(38);
+			setState(40);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case PRINT:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(33);
+				setState(35);
 				st_print();
 				}
 				break;
 			case VAR:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(34);
+				setState(36);
 				st_attrib();
 				}
 				break;
 			case IF:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(35);
+				setState(37);
 				st_if();
 				}
 				break;
 			case WHILE:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(36);
+				setState(38);
 				st_while();
 				}
 				break;
 			case NL:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(37);
+				setState(39);
 				match(NL);
 				}
 				break;
@@ -366,25 +366,25 @@ public class SauroParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(40);
+			setState(42);
 			match(PRINT);
-			setState(41);
+			setState(43);
 			match(OP_PAR);
 			 
 			                emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
 			            
-			setState(43);
+			setState(45);
 			expression();
 			 
 			                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
 			            
-			setState(52);
+			setState(54);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				setState(45);
+				setState(47);
 				match(COMMA);
 
 				                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
@@ -393,18 +393,18 @@ public class SauroParser extends Parser {
 
 				                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
 				            
-				setState(47);
+				setState(49);
 				expression();
 				 
 				                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
 				            
 				}
 				}
-				setState(54);
+				setState(56);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
-			setState(55);
+			setState(57);
 			match(CL_PAR);
 			 
 			                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
@@ -450,11 +450,11 @@ public class SauroParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(58);
-			((St_attribContext)_localctx).VAR = match(VAR);
-			setState(59);
-			match(ATTRIB);
 			setState(60);
+			((St_attribContext)_localctx).VAR = match(VAR);
+			setState(61);
+			match(ATTRIB);
+			setState(62);
 			expression();
 
 			                if (!symbol_table.contains((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null)))
@@ -514,35 +514,34 @@ public class SauroParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 
-			            int local_stack_if = ++stack_if;
+			            if_count++;
+			            int if_local = if_count;
 			        
-			setState(64);
-			match(IF);
-			setState(65);
-			comparison();
 			setState(66);
-			match(COLON);
+			match(IF);
 			setState(67);
+			comparison();
+			setState(68);
+			match(COLON);
+			setState(69);
 			match(INDENT);
-			setState(69); 
+			setState(71); 
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			do {
 				{
 				{
-				setState(68);
+				setState(70);
 				statement();
 				}
 				}
-				setState(71); 
+				setState(73); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << IF) | (1L << WHILE) | (1L << PRINT) | (1L << VAR) | (1L << NL))) != 0) );
-			setState(73);
+			setState(75);
 			match(DEDENT);
-
-			            System.out.println( "     NOT_IF_" + local_stack_if + ":" );
-			        
+			 System.out.println("NOT_IF_" + if_local + ":"); 
 			}
 		}
 		catch (RecognitionException re) {
@@ -591,10 +590,9 @@ public class SauroParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(76);
+			setState(78);
 			expression();
-			{
-			setState(77);
+			setState(79);
 			((ComparisonContext)_localctx).op = _input.LT(1);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQ) | (1L << NE) | (1L << GT) | (1L << GE) | (1L << LT) | (1L << LE))) != 0)) ) {
@@ -605,34 +603,15 @@ public class SauroParser extends Parser {
 				_errHandler.reportMatch(this);
 				consume();
 			}
-			}
-			setState(78);
+			setState(80);
 			expression();
 
-			            if( (((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == EQ ) 
-			            {
-			                emit( "    if_icmpne NOT_IF_" + stack_if, -2 );
-			            }
-			            else if ( (((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == NE )
-			            { 
-			                emit( "    if_icmpeq NOT_IF_" + stack_if, -2 );
-			            }
-			            else if ( (((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == GT )
-			            { 
-			                emit( "    if_icmple NOT_IF_" + stack_if, -2 );
-			            }
-			            else if ( (((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == GE )
-			            { 
-			                emit( "    if_icmplt NOT_IF_" + stack_if, -2 );
-			            }
-			            else if ( (((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == LT )
-			            { 
-			                emit( "    if_icmpge NOT_IF_" + stack_if, -2 );
-			            }
-			            else if ( (((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == LE )
-			            { 
-			                emit( "    if_icmpgt NOT_IF_" + stack_if, -2 );
-			            }
+			            if ((((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == EQ) { emit("\nif_icmpne NOT_IF_" + if_count, -2); }
+			            else if ((((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == NE) { emit("\nif_icmpeq NOT_IF_" + if_count, -2); }
+			            else if ((((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == GT) { emit("\nif_icmple NOT_IF_" + if_count, -2); }
+			            else if ((((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == GE) { emit("\nif_icmplt NOT_IF_" + if_count, -2); }
+			            else if ((((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == LT) { emit("\nif_icmpge NOT_IF_" + if_count, -2); }
+			            else if ((((ComparisonContext)_localctx).op!=null?((ComparisonContext)_localctx).op.getType():0) == LE) { emit("\nif_icmpgt NOT_IF_" + if_count, -2); }
 			        
 			}
 		}
@@ -649,8 +628,8 @@ public class SauroParser extends Parser {
 
 	public static class St_whileContext extends ParserRuleContext {
 		public TerminalNode WHILE() { return getToken(SauroParser.WHILE, 0); }
-		public ComparisonContext comparison() {
-			return getRuleContext(ComparisonContext.class,0);
+		public Comparison_whileContext comparison_while() {
+			return getRuleContext(Comparison_whileContext.class,0);
 		}
 		public TerminalNode COLON() { return getToken(SauroParser.COLON, 0); }
 		public TerminalNode INDENT() { return getToken(SauroParser.INDENT, 0); }
@@ -682,42 +661,110 @@ public class SauroParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			 
-			            int tmp_stack_while = ++stack_while;
-			            int local_stack_if = ++stack_if;
-			            System.out.println( "        BEGIN_WHILE_" + tmp_stack_while + ":" ); 
+
+			            while_count++;
+			            int while_local = while_count;
+			            System.out.println("BEGIN_WHILE_" + while_local + ":"); 
 			        
-			setState(82);
-			match(WHILE);
-			setState(83);
-			comparison();
 			setState(84);
-			match(COLON);
+			match(WHILE);
 			setState(85);
+			comparison_while();
+			setState(86);
+			match(COLON);
+			setState(87);
 			match(INDENT);
-			setState(87); 
+			setState(89); 
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			do {
 				{
 				{
-				setState(86);
+				setState(88);
 				statement();
 				}
 				}
-				setState(89); 
+				setState(91); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << IF) | (1L << WHILE) | (1L << PRINT) | (1L << VAR) | (1L << NL))) != 0) );
-			 
-			                System.out.println( "        goto BEGIN_WHILE_" +  tmp_stack_while ); 
-			            
-			setState(92);
+			setState(93);
 			match(DEDENT);
-			   
-			                System.out.println( "        NOT_IF_" + local_stack_if + ":" ); 
-			                System.out.println( "        END_WHILE_" +  tmp_stack_while + ":" ); 
-			            
+
+			            emit("    goto BEGIN_WHILE_" + while_local, 1);
+			            System.out.println("END_WHILE_" + while_local + ":");
+			        
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class Comparison_whileContext extends ParserRuleContext {
+		public Token op;
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode EQ() { return getToken(SauroParser.EQ, 0); }
+		public TerminalNode NE() { return getToken(SauroParser.NE, 0); }
+		public TerminalNode GT() { return getToken(SauroParser.GT, 0); }
+		public TerminalNode GE() { return getToken(SauroParser.GE, 0); }
+		public TerminalNode LT() { return getToken(SauroParser.LT, 0); }
+		public TerminalNode LE() { return getToken(SauroParser.LE, 0); }
+		public Comparison_whileContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_comparison_while; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterComparison_while(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitComparison_while(this);
+		}
+	}
+
+	public final Comparison_whileContext comparison_while() throws RecognitionException {
+		Comparison_whileContext _localctx = new Comparison_whileContext(_ctx, getState());
+		enterRule(_localctx, 16, RULE_comparison_while);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(96);
+			expression();
+			setState(97);
+			((Comparison_whileContext)_localctx).op = _input.LT(1);
+			_la = _input.LA(1);
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQ) | (1L << NE) | (1L << GT) | (1L << GE) | (1L << LT) | (1L << LE))) != 0)) ) {
+				((Comparison_whileContext)_localctx).op = (Token)_errHandler.recoverInline(this);
+			}
+			else {
+				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+				_errHandler.reportMatch(this);
+				consume();
+			}
+			setState(98);
+			expression();
+
+			                 if ((((Comparison_whileContext)_localctx).op!=null?((Comparison_whileContext)_localctx).op.getType():0) == EQ) { emit("\nif_icmpne END_WHILE_" + while_count, -2); }
+			            else if ((((Comparison_whileContext)_localctx).op!=null?((Comparison_whileContext)_localctx).op.getType():0) == NE) { emit("\nif_icmpeq END_WHILE_" + while_count, -2); }
+			            else if ((((Comparison_whileContext)_localctx).op!=null?((Comparison_whileContext)_localctx).op.getType():0) == GT) { emit("\nif_icmple END_WHILE_" + while_count, -2); }
+			            else if ((((Comparison_whileContext)_localctx).op!=null?((Comparison_whileContext)_localctx).op.getType():0) == GE) { emit("\nif_icmplt END_WHILE_" + while_count, -2); }
+			            else if ((((Comparison_whileContext)_localctx).op!=null?((Comparison_whileContext)_localctx).op.getType():0) == LT) { emit("\nif_icmpge END_WHILE_" + while_count, -2); }
+			            else if ((((Comparison_whileContext)_localctx).op!=null?((Comparison_whileContext)_localctx).op.getType():0) == LE) { emit("\nif_icmpgt END_WHILE_" + while_count, -2); }
+			        
 			}
 		}
 		catch (RecognitionException re) {
@@ -763,20 +810,20 @@ public class SauroParser extends Parser {
 
 	public final ExpressionContext expression() throws RecognitionException {
 		ExpressionContext _localctx = new ExpressionContext(_ctx, getState());
-		enterRule(_localctx, 16, RULE_expression);
+		enterRule(_localctx, 18, RULE_expression);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(95);
+			setState(101);
 			term();
-			setState(102);
+			setState(108);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==PLUS || _la==MINUS) {
 				{
 				{
-				setState(96);
+				setState(102);
 				((ExpressionContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !(_la==PLUS || _la==MINUS) ) {
@@ -787,14 +834,14 @@ public class SauroParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(97);
+				setState(103);
 				term();
 
 				                emit(((((ExpressionContext)_localctx).op!=null?((ExpressionContext)_localctx).op.getType():0) == PLUS) ? "    iadd" : "    isub", - 1);
 				            
 				}
 				}
-				setState(104);
+				setState(110);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -847,20 +894,20 @@ public class SauroParser extends Parser {
 
 	public final TermContext term() throws RecognitionException {
 		TermContext _localctx = new TermContext(_ctx, getState());
-		enterRule(_localctx, 18, RULE_term);
+		enterRule(_localctx, 20, RULE_term);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(105);
+			setState(111);
 			factor();
-			setState(112);
+			setState(118);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) {
 				{
 				{
-				setState(106);
+				setState(112);
 				((TermContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) ) {
@@ -871,7 +918,7 @@ public class SauroParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(107);
+				setState(113);
 				factor();
 				 
 				                if      ((((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getType():0) == TIMES) {emit("    imul", - 1);}    
@@ -880,7 +927,7 @@ public class SauroParser extends Parser {
 				            
 				}
 				}
-				setState(114);
+				setState(120);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -924,15 +971,15 @@ public class SauroParser extends Parser {
 
 	public final FactorContext factor() throws RecognitionException {
 		FactorContext _localctx = new FactorContext(_ctx, getState());
-		enterRule(_localctx, 20, RULE_factor);
+		enterRule(_localctx, 22, RULE_factor);
 		try {
-			setState(127);
+			setState(133);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case NUMBER:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(115);
+				setState(121);
 				((FactorContext)_localctx).NUMBER = match(NUMBER);
 				 
 				                emit("    ldc "+ (((FactorContext)_localctx).NUMBER!=null?((FactorContext)_localctx).NUMBER.getText():null), + 1); 
@@ -942,18 +989,18 @@ public class SauroParser extends Parser {
 			case OP_PAR:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(117);
+				setState(123);
 				match(OP_PAR);
-				setState(118);
+				setState(124);
 				expression();
-				setState(119);
+				setState(125);
 				match(CL_PAR);
 				}
 				break;
 			case VAR:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(121);
+				setState(127);
 				((FactorContext)_localctx).VAR = match(VAR);
 
 				                if(!symbol_table.contains((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null)))
@@ -975,11 +1022,11 @@ public class SauroParser extends Parser {
 			case READ_INT:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(123);
+				setState(129);
 				match(READ_INT);
-				setState(124);
+				setState(130);
 				match(OP_PAR);
-				setState(125);
+				setState(131);
 				match(CL_PAR);
 
 				                emit("    invokestatic Runtime/readInt()I", +1);
@@ -1002,39 +1049,41 @@ public class SauroParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\37\u0084\4\2\t\2"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\37\u008a\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
-		"\t\13\4\f\t\f\3\2\3\2\3\2\3\3\3\3\6\3\36\n\3\r\3\16\3\37\3\3\3\3\3\4\3"+
-		"\4\3\4\3\4\3\4\5\4)\n\4\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\7\5\65"+
-		"\n\5\f\5\16\58\13\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7\3"+
-		"\7\3\7\6\7H\n\7\r\7\16\7I\3\7\3\7\3\7\3\b\3\b\3\b\3\b\3\b\3\t\3\t\3\t"+
-		"\3\t\3\t\3\t\6\tZ\n\t\r\t\16\t[\3\t\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3\n\7"+
-		"\ng\n\n\f\n\16\nj\13\n\3\13\3\13\3\13\3\13\3\13\7\13q\n\13\f\13\16\13"+
-		"t\13\13\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f\5\f\u0082\n\f"+
-		"\3\f\2\2\r\2\4\6\b\n\f\16\20\22\24\26\2\5\3\2\7\f\3\2\r\16\3\2\17\21\2"+
-		"\u0085\2\30\3\2\2\2\4\33\3\2\2\2\6(\3\2\2\2\b*\3\2\2\2\n<\3\2\2\2\fA\3"+
-		"\2\2\2\16N\3\2\2\2\20S\3\2\2\2\22a\3\2\2\2\24k\3\2\2\2\26\u0081\3\2\2"+
-		"\2\30\31\b\2\1\2\31\32\5\4\3\2\32\3\3\2\2\2\33\35\b\3\1\2\34\36\5\6\4"+
-		"\2\35\34\3\2\2\2\36\37\3\2\2\2\37\35\3\2\2\2\37 \3\2\2\2 !\3\2\2\2!\""+
-		"\b\3\1\2\"\5\3\2\2\2#)\5\b\5\2$)\5\n\6\2%)\5\f\7\2&)\5\20\t\2\')\7\34"+
-		"\2\2(#\3\2\2\2($\3\2\2\2(%\3\2\2\2(&\3\2\2\2(\'\3\2\2\2)\7\3\2\2\2*+\7"+
-		"\27\2\2+,\7\22\2\2,-\b\5\1\2-.\5\22\n\2.\66\b\5\1\2/\60\7\25\2\2\60\61"+
-		"\b\5\1\2\61\62\5\22\n\2\62\63\b\5\1\2\63\65\3\2\2\2\64/\3\2\2\2\658\3"+
-		"\2\2\2\66\64\3\2\2\2\66\67\3\2\2\2\679\3\2\2\28\66\3\2\2\29:\7\23\2\2"+
-		":;\b\5\1\2;\t\3\2\2\2<=\7\32\2\2=>\7\24\2\2>?\5\22\n\2?@\b\6\1\2@\13\3"+
-		"\2\2\2AB\b\7\1\2BC\7\3\2\2CD\5\16\b\2DE\7\26\2\2EG\7\36\2\2FH\5\6\4\2"+
-		"GF\3\2\2\2HI\3\2\2\2IG\3\2\2\2IJ\3\2\2\2JK\3\2\2\2KL\7\37\2\2LM\b\7\1"+
-		"\2M\r\3\2\2\2NO\5\22\n\2OP\t\2\2\2PQ\5\22\n\2QR\b\b\1\2R\17\3\2\2\2ST"+
-		"\b\t\1\2TU\7\4\2\2UV\5\16\b\2VW\7\26\2\2WY\7\36\2\2XZ\5\6\4\2YX\3\2\2"+
-		"\2Z[\3\2\2\2[Y\3\2\2\2[\\\3\2\2\2\\]\3\2\2\2]^\b\t\1\2^_\7\37\2\2_`\b"+
-		"\t\1\2`\21\3\2\2\2ah\5\24\13\2bc\t\3\2\2cd\5\24\13\2de\b\n\1\2eg\3\2\2"+
-		"\2fb\3\2\2\2gj\3\2\2\2hf\3\2\2\2hi\3\2\2\2i\23\3\2\2\2jh\3\2\2\2kr\5\26"+
-		"\f\2lm\t\4\2\2mn\5\26\f\2no\b\13\1\2oq\3\2\2\2pl\3\2\2\2qt\3\2\2\2rp\3"+
-		"\2\2\2rs\3\2\2\2s\25\3\2\2\2tr\3\2\2\2uv\7\31\2\2v\u0082\b\f\1\2wx\7\22"+
-		"\2\2xy\5\22\n\2yz\7\23\2\2z\u0082\3\2\2\2{|\7\32\2\2|\u0082\b\f\1\2}~"+
-		"\7\30\2\2~\177\7\22\2\2\177\u0080\7\23\2\2\u0080\u0082\b\f\1\2\u0081u"+
-		"\3\2\2\2\u0081w\3\2\2\2\u0081{\3\2\2\2\u0081}\3\2\2\2\u0082\27\3\2\2\2"+
-		"\n\37(\66I[hr\u0081";
+		"\t\13\4\f\t\f\4\r\t\r\3\2\3\2\3\2\3\3\3\3\6\3 \n\3\r\3\16\3!\3\3\3\3\3"+
+		"\4\3\4\3\4\3\4\3\4\5\4+\n\4\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\7"+
+		"\5\67\n\5\f\5\16\5:\13\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3"+
+		"\7\3\7\3\7\6\7J\n\7\r\7\16\7K\3\7\3\7\3\7\3\b\3\b\3\b\3\b\3\b\3\t\3\t"+
+		"\3\t\3\t\3\t\3\t\6\t\\\n\t\r\t\16\t]\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3\n\3"+
+		"\13\3\13\3\13\3\13\3\13\7\13m\n\13\f\13\16\13p\13\13\3\f\3\f\3\f\3\f\3"+
+		"\f\7\fw\n\f\f\f\16\fz\13\f\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r"+
+		"\3\r\5\r\u0088\n\r\3\r\2\2\16\2\4\6\b\n\f\16\20\22\24\26\30\2\5\3\2\7"+
+		"\f\3\2\r\16\3\2\17\21\2\u008a\2\32\3\2\2\2\4\35\3\2\2\2\6*\3\2\2\2\b,"+
+		"\3\2\2\2\n>\3\2\2\2\fC\3\2\2\2\16P\3\2\2\2\20U\3\2\2\2\22b\3\2\2\2\24"+
+		"g\3\2\2\2\26q\3\2\2\2\30\u0087\3\2\2\2\32\33\b\2\1\2\33\34\5\4\3\2\34"+
+		"\3\3\2\2\2\35\37\b\3\1\2\36 \5\6\4\2\37\36\3\2\2\2 !\3\2\2\2!\37\3\2\2"+
+		"\2!\"\3\2\2\2\"#\3\2\2\2#$\b\3\1\2$\5\3\2\2\2%+\5\b\5\2&+\5\n\6\2\'+\5"+
+		"\f\7\2(+\5\20\t\2)+\7\34\2\2*%\3\2\2\2*&\3\2\2\2*\'\3\2\2\2*(\3\2\2\2"+
+		"*)\3\2\2\2+\7\3\2\2\2,-\7\27\2\2-.\7\22\2\2./\b\5\1\2/\60\5\24\13\2\60"+
+		"8\b\5\1\2\61\62\7\25\2\2\62\63\b\5\1\2\63\64\5\24\13\2\64\65\b\5\1\2\65"+
+		"\67\3\2\2\2\66\61\3\2\2\2\67:\3\2\2\28\66\3\2\2\289\3\2\2\29;\3\2\2\2"+
+		":8\3\2\2\2;<\7\23\2\2<=\b\5\1\2=\t\3\2\2\2>?\7\32\2\2?@\7\24\2\2@A\5\24"+
+		"\13\2AB\b\6\1\2B\13\3\2\2\2CD\b\7\1\2DE\7\3\2\2EF\5\16\b\2FG\7\26\2\2"+
+		"GI\7\36\2\2HJ\5\6\4\2IH\3\2\2\2JK\3\2\2\2KI\3\2\2\2KL\3\2\2\2LM\3\2\2"+
+		"\2MN\7\37\2\2NO\b\7\1\2O\r\3\2\2\2PQ\5\24\13\2QR\t\2\2\2RS\5\24\13\2S"+
+		"T\b\b\1\2T\17\3\2\2\2UV\b\t\1\2VW\7\4\2\2WX\5\22\n\2XY\7\26\2\2Y[\7\36"+
+		"\2\2Z\\\5\6\4\2[Z\3\2\2\2\\]\3\2\2\2][\3\2\2\2]^\3\2\2\2^_\3\2\2\2_`\7"+
+		"\37\2\2`a\b\t\1\2a\21\3\2\2\2bc\5\24\13\2cd\t\2\2\2de\5\24\13\2ef\b\n"+
+		"\1\2f\23\3\2\2\2gn\5\26\f\2hi\t\3\2\2ij\5\26\f\2jk\b\13\1\2km\3\2\2\2"+
+		"lh\3\2\2\2mp\3\2\2\2nl\3\2\2\2no\3\2\2\2o\25\3\2\2\2pn\3\2\2\2qx\5\30"+
+		"\r\2rs\t\4\2\2st\5\30\r\2tu\b\f\1\2uw\3\2\2\2vr\3\2\2\2wz\3\2\2\2xv\3"+
+		"\2\2\2xy\3\2\2\2y\27\3\2\2\2zx\3\2\2\2{|\7\31\2\2|\u0088\b\r\1\2}~\7\22"+
+		"\2\2~\177\5\24\13\2\177\u0080\7\23\2\2\u0080\u0088\3\2\2\2\u0081\u0082"+
+		"\7\32\2\2\u0082\u0088\b\r\1\2\u0083\u0084\7\30\2\2\u0084\u0085\7\22\2"+
+		"\2\u0085\u0086\7\23\2\2\u0086\u0088\b\r\1\2\u0087{\3\2\2\2\u0087}\3\2"+
+		"\2\2\u0087\u0081\3\2\2\2\u0087\u0083\3\2\2\2\u0088\31\3\2\2\2\n!*8K]n"+
+		"x\u0087";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

@@ -41,8 +41,8 @@ COMANDOS TERMINAL
 @parser::members
 {
     private static int stack_cur, stack_max, if_counter;
-    private static int stack_if = 0;
-    private static int stack_while = 0;
+    private static int if_count = 0;
+    private static int while_count = 0;
 
     public static void emit (String bytecode, int delta)
     {
@@ -188,61 +188,48 @@ st_attrib
 
 st_if
     :   {
-            int local_stack_if = ++stack_if;
+            if_count++;
+            int if_local = if_count;
         }
         IF comparison COLON INDENT ( statement )+ DEDENT
-        {
-            System.out.println( "     NOT_IF_" + local_stack_if + ":" );
-        } 
+        { System.out.println("NOT_IF_" + if_local + ":"); }
     ;
 
 comparison
-    :   expression ( op = ( EQ | NE | GT | GE | LT | LE ) )  expression
+    :   expression op = ( EQ | NE | GT | GE | LT | LE) expression
         {
-            if( $op.type == EQ ) 
-            {
-                emit( "    if_icmpne NOT_IF_" + stack_if, -2 );
-            }
-            else if ( $op.type == NE )
-            { 
-                emit( "    if_icmpeq NOT_IF_" + stack_if, -2 );
-            }
-            else if ( $op.type == GT )
-            { 
-                emit( "    if_icmple NOT_IF_" + stack_if, -2 );
-            }
-            else if ( $op.type == GE )
-            { 
-                emit( "    if_icmplt NOT_IF_" + stack_if, -2 );
-            }
-            else if ( $op.type == LT )
-            { 
-                emit( "    if_icmpge NOT_IF_" + stack_if, -2 );
-            }
-            else if ( $op.type == LE )
-            { 
-                emit( "    if_icmpgt NOT_IF_" + stack_if, -2 );
-            }
+            if ($op.type == EQ) { emit("\nif_icmpne NOT_IF_" + if_count, -2); }
+            else if ($op.type == NE) { emit("\nif_icmpeq NOT_IF_" + if_count, -2); }
+            else if ($op.type == GT) { emit("\nif_icmple NOT_IF_" + if_count, -2); }
+            else if ($op.type == GE) { emit("\nif_icmplt NOT_IF_" + if_count, -2); }
+            else if ($op.type == LT) { emit("\nif_icmpge NOT_IF_" + if_count, -2); }
+            else if ($op.type == LE) { emit("\nif_icmpgt NOT_IF_" + if_count, -2); }
         }
     ;
 
 st_while
-    :   { 
-            int tmp_stack_while = ++stack_while;
-            int local_stack_if = ++stack_if;
-            System.out.println( "        BEGIN_WHILE_" + tmp_stack_while + ":" ); 
+    :   {
+            while_count++;
+            int while_local = while_count;
+            System.out.println("BEGIN_WHILE_" + while_local + ":"); 
         }
+        WHILE comparison_while COLON INDENT ( statement )+ DEDENT
+        {
+            emit("    goto BEGIN_WHILE_" + while_local, 1);
+            System.out.println("END_WHILE_" + while_local + ":");
+        }
+    ;
 
-        WHILE comparison COLON INDENT ( statement )+   
-            { 
-                System.out.println( "        goto BEGIN_WHILE_" +  tmp_stack_while ); 
-            } 
-
-        DEDENT
-            {   
-                System.out.println( "        NOT_IF_" + local_stack_if + ":" ); 
-                System.out.println( "        END_WHILE_" +  tmp_stack_while + ":" ); 
-            } 
+comparison_while
+    :   expression op = ( EQ | NE | GT | GE | LT | LE) expression
+        {
+                 if ($op.type == EQ) { emit("\nif_icmpne END_WHILE_" + while_count, -2); }
+            else if ($op.type == NE) { emit("\nif_icmpeq END_WHILE_" + while_count, -2); }
+            else if ($op.type == GT) { emit("\nif_icmple END_WHILE_" + while_count, -2); }
+            else if ($op.type == GE) { emit("\nif_icmplt END_WHILE_" + while_count, -2); }
+            else if ($op.type == LT) { emit("\nif_icmpge END_WHILE_" + while_count, -2); }
+            else if ($op.type == LE) { emit("\nif_icmpgt END_WHILE_" + while_count, -2); }
+        }
     ;
 
 expression
