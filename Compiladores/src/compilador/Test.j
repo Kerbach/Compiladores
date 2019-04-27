@@ -10,29 +10,81 @@
 
 .method public static main([Ljava/lang/String;)V
         ldc 0
-        ldc 1
-    
+        istore 1
+
+        ldc 0
+        istore 2
+
+        BEGIN_WHILE_1:
+        iload 2
+        ldc 100
         if_icmpge NOT_IF_1
-        getstatic java/lang/System/out Ljava/io/PrintStream;
-        ldc 0
-        invokevirtual java/io/PrintStream/print(I)V
-    
-        getstatic java/lang/System/out Ljava/io/PrintStream;
-        invokevirtual java/io/PrintStream/println()V
-        ldc 0
         ldc 1
-    
+        istore 3
+
+        BEGIN_WHILE_2:
+        iload 3
+        ldc 100
         if_icmpge NOT_IF_2
+        iload 1
+        iload 3
+        iadd
+        istore 1
+
+        iload 3
+        ldc 1
+        iadd
+        istore 3
+
+        goto BEGIN_WHILE_2
+        NOT_IF_2:
+        END_WHILE_2:
+        ldc 100
+        istore 4
+
+        BEGIN_WHILE_3:
+        iload 4
+        ldc 0
+        if_icmple NOT_IF_3
+        iload 1
+        iload 4
+        iadd
+        istore 1
+
+        iload 4
+        ldc 1
+        isub
+        istore 4
+
+        goto BEGIN_WHILE_3
+        NOT_IF_3:
+        END_WHILE_3:
+        iload 2
+        ldc 1
+        iadd
+        istore 2
+
+        goto BEGIN_WHILE_1
+        NOT_IF_1:
+        END_WHILE_1:
         getstatic java/lang/System/out Ljava/io/PrintStream;
-        ldc 3
+        iload 1
         invokevirtual java/io/PrintStream/print(I)V
     
         getstatic java/lang/System/out Ljava/io/PrintStream;
         invokevirtual java/io/PrintStream/println()V
-        NOT_IF_2:
-        NOT_IF_1:
+        ldc 1
+        ldc 1
+        if_icmpne NOT_IF_4
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        ldc 1
+        invokevirtual java/io/PrintStream/print(I)V
+    
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        invokevirtual java/io/PrintStream/println()V
+     NOT_IF_4:
         return
-.limit locals 1
+.limit locals 5
 .limit stack 2
 .end method
-; symbols: [args]
+; symbols: [args, total, x, y, z]

@@ -102,6 +102,18 @@ public class SauroBaseListener implements SauroListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSt_while(SauroParser.St_whileContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSt_while(SauroParser.St_whileContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExpression(SauroParser.ExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}

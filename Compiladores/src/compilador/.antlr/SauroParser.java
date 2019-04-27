@@ -1,4 +1,4 @@
-// Generated from Sauro.g by ANTLR 4.7.2
+// Generated from c:\Users\wrkerber\Documents\NetBeansProjects\Compiladores\Compiladores\src\compilador\Sauro.g by ANTLR 4.7.1
 
     //import java.util.ArrayList;
 
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class SauroParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.7.2", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.7.1", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -27,31 +27,22 @@ public class SauroParser extends Parser {
 		RULE_program = 0, RULE_main = 1, RULE_statement = 2, RULE_st_print = 3, 
 		RULE_st_attrib = 4, RULE_st_if = 5, RULE_comparison = 6, RULE_st_while = 7, 
 		RULE_expression = 8, RULE_term = 9, RULE_factor = 10;
-	private static String[] makeRuleNames() {
-		return new String[] {
-			"program", "main", "statement", "st_print", "st_attrib", "st_if", "comparison", 
-			"st_while", "expression", "term", "factor"
-		};
-	}
-	public static final String[] ruleNames = makeRuleNames();
+	public static final String[] ruleNames = {
+		"program", "main", "statement", "st_print", "st_attrib", "st_if", "comparison", 
+		"st_while", "expression", "term", "factor"
+	};
 
-	private static String[] makeLiteralNames() {
-		return new String[] {
-			null, "'if'", "'while'", "'{'", "'}'", "'=='", "'!='", "'>'", "'>='", 
-			"'<'", "'<='", "'+'", "'-'", "'*'", "'/'", "'%'", "'('", "')'", "'='", 
-			"','", "':'", "'print'", "'read_int'"
-		};
-	}
-	private static final String[] _LITERAL_NAMES = makeLiteralNames();
-	private static String[] makeSymbolicNames() {
-		return new String[] {
-			null, "IF", "WHILE", "OP_CUR", "CL_CUR", "EQ", "NE", "GT", "GE", "LT", 
-			"LE", "PLUS", "MINUS", "TIMES", "OVER", "REMAINDER", "OP_PAR", "CL_PAR", 
-			"ATTRIB", "COMMA", "COLON", "PRINT", "READ_INT", "NUMBER", "VAR", "COMMENT", 
-			"NL", "SPACE", "INDENT", "DEDENT"
-		};
-	}
-	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
+	private static final String[] _LITERAL_NAMES = {
+		null, "'if'", "'while'", "'{'", "'}'", "'=='", "'!='", "'>'", "'>='", 
+		"'<'", "'<='", "'+'", "'-'", "'*'", "'/'", "'%'", "'('", "')'", "'='", 
+		"','", "':'", "'print'", "'read_int'"
+	};
+	private static final String[] _SYMBOLIC_NAMES = {
+		null, "IF", "WHILE", "OP_CUR", "CL_CUR", "EQ", "NE", "GT", "GE", "LT", 
+		"LE", "PLUS", "MINUS", "TIMES", "OVER", "REMAINDER", "OP_PAR", "CL_PAR", 
+		"ATTRIB", "COMMA", "COLON", "PRINT", "READ_INT", "NUMBER", "VAR", "COMMENT", 
+		"NL", "SPACE", "INDENT", "DEDENT"
+	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
 	/**
@@ -132,7 +123,6 @@ public class SauroParser extends Parser {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
-
 	public static class ProgramContext extends ParserRuleContext {
 		public MainContext main() {
 			return getRuleContext(MainContext.class,0);
@@ -141,14 +131,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_program; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterProgram(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitProgram(this);
-		}
 	}
 
 	public final ProgramContext program() throws RecognitionException {
@@ -193,14 +175,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_main; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterMain(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitMain(this);
-		}
 	}
 
 	public final MainContext main() throws RecognitionException {
@@ -264,14 +238,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_statement; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterStatement(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitStatement(this);
-		}
 	}
 
 	public final StatementContext statement() throws RecognitionException {
@@ -349,14 +315,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_st_print; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterSt_print(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitSt_print(this);
-		}
 	}
 
 	public final St_printContext st_print() throws RecognitionException {
@@ -434,14 +392,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_st_attrib; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterSt_attrib(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitSt_attrib(this);
-		}
 	}
 
 	public final St_attribContext st_attrib() throws RecognitionException {
@@ -496,14 +446,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_st_if; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterSt_if(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitSt_if(this);
-		}
 	}
 
 	public final St_ifContext st_if() throws RecognitionException {
@@ -574,14 +516,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_comparison; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterComparison(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitComparison(this);
-		}
 	}
 
 	public final ComparisonContext comparison() throws RecognitionException {
@@ -665,14 +599,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_st_while; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterSt_while(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitSt_while(this);
-		}
 	}
 
 	public final St_whileContext st_while() throws RecognitionException {
@@ -751,14 +677,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_expression; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitExpression(this);
-		}
 	}
 
 	public final ExpressionContext expression() throws RecognitionException {
@@ -835,14 +753,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_term; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterTerm(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitTerm(this);
-		}
 	}
 
 	public final TermContext term() throws RecognitionException {
@@ -912,14 +822,6 @@ public class SauroParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_factor; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterFactor(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitFactor(this);
-		}
 	}
 
 	public final FactorContext factor() throws RecognitionException {

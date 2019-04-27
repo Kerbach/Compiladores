@@ -41,6 +41,8 @@ COMANDOS TERMINAL
 @parser::members
 {
     private static int stack_cur, stack_max, if_counter;
+    private static int stack_if = 0;
+    private static int stack_while = 0;
 
     public static void emit (String bytecode, int delta)
     {
@@ -74,6 +76,7 @@ COMANDOS TERMINAL
 tokens {INDENT, DEDENT}
 
 IF          : 'if' ;
+WHILE       : 'while' ;
 OP_CUR      : '{' ;
 CL_CUR      : '}' ;
 EQ          : '==' ;
@@ -139,7 +142,7 @@ main
     ;
 
 statement
-    : st_print | st_attrib | st_if | NL
+    : st_print | st_attrib | st_if | st_while| NL
     ;
 
 st_print            // PRINT OP_PAR expression (COMMA expression )* CL_PAR
@@ -184,29 +187,68 @@ st_attrib
     ;
 
 st_if
-    :   {int if_local = ++if_counter;}
-        IF comparison COLON INDENT (statement)+ DEDENT
-            { 
-                System.out.println("        NOT_IF_" + if_local + ":"); 
-            }
+    :   {
+            int local_stack_if = ++stack_if;
+        }
+        IF comparison COLON INDENT ( statement )+ DEDENT
+        {
+            System.out.println( "     NOT_IF_" + local_stack_if + ":" );
+        } 
     ;
 
 comparison
-    :   expression op = ( EQ | NE | GT | GE | LT | LE) expression
+    :   expression ( op = ( EQ | NE | GT | GE | LT | LE ) )  expression
         {
-            if($op.type == EQ) { emit("\n        if_icmpne NOT_IF_" + if_counter,-2); }
-            if($op.type == NE) { emit("\n        if_icmpeq NOT_IF_" + if_counter,-2); }
-            if($op.type == LT) { emit("\n        if_icmpge NOT_IF_" + if_counter,-2); }
-            if($op.type == LE) { emit("\n        if_icmpgt NOT_IF_" + if_counter,-2); }
-            if($op.type == GT) { emit("\n        if_icmple NOT_IF_" + if_counter,-2); }
-            if($op.type == GE) { emit("\n        if_icmplt NOT_IF_" + if_counter,-2); }
+            if( $op.type == EQ ) 
+            {
+                emit( "    if_icmpne NOT_IF_" + stack_if, -2 );
+            }
+            else if ( $op.type == NE )
+            { 
+                emit( "    if_icmpeq NOT_IF_" + stack_if, -2 );
+            }
+            else if ( $op.type == GT )
+            { 
+                emit( "    if_icmple NOT_IF_" + stack_if, -2 );
+            }
+            else if ( $op.type == GE )
+            { 
+                emit( "    if_icmplt NOT_IF_" + stack_if, -2 );
+            }
+            else if ( $op.type == LT )
+            { 
+                emit( "    if_icmpge NOT_IF_" + stack_if, -2 );
+            }
+            else if ( $op.type == LE )
+            { 
+                emit( "    if_icmpgt NOT_IF_" + stack_if, -2 );
+            }
         }
+    ;
+
+st_while
+    :   { 
+            int tmp_stack_while = ++stack_while;
+            int local_stack_if = ++stack_if;
+            System.out.println( "        BEGIN_WHILE_" + tmp_stack_while + ":" ); 
+        }
+
+        WHILE comparison COLON INDENT ( statement )+   
+            { 
+                System.out.println( "        goto BEGIN_WHILE_" +  tmp_stack_while ); 
+            } 
+
+        DEDENT
+            {   
+                System.out.println( "        NOT_IF_" + local_stack_if + ":" ); 
+                System.out.println( "        END_WHILE_" +  tmp_stack_while + ":" ); 
+            } 
     ;
 
 expression
     :   term ( op = ( PLUS | MINUS ) term 
             {
-                emit(($op.type == PLUS) ? "iadd" : "    isub", - 1);
+                emit(($op.type == PLUS) ? "    iadd" : "    isub", - 1);
             } 
         )*
     ;
