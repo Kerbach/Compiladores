@@ -1,5 +1,9 @@
-a = 1
-while a < 10:
-    print(a)
-    a = a + 1
+# constant
+print("abc")
+print(1)
+# input
+#print(read_str())
 
+# variable
+#x = "def"
+#print(x)

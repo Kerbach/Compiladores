@@ -9,29 +9,20 @@
 .end method
 
 .method public static main([Ljava/lang/String;)V
-        ldc 1
-        istore 1
-
-BEGIN_WHILE_1:
-        iload 1
-        ldc 10
-    
-if_icmpge END_WHILE_1
         getstatic java/lang/System/out Ljava/io/PrintStream;
-        iload 1
+        ldc "abc"
+        invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V
+    
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        invokevirtual java/io/PrintStream/println()V
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        ldc 1
         invokevirtual java/io/PrintStream/print(I)V
     
         getstatic java/lang/System/out Ljava/io/PrintStream;
         invokevirtual java/io/PrintStream/println()V
-        iload 1
-        ldc 1
-        iadd
-        istore 1
-
-        goto BEGIN_WHILE_1
-END_WHILE_1:
         return
-.limit locals 2
-.limit stack 2
+.limit locals 1
+.limit stack 3
 .end method
-; symbols: [args, a]
+; symbols: [args]

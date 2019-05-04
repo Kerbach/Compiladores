@@ -21,8 +21,8 @@ public class SauroParser extends Parser {
 	public static final int
 		IF=1, WHILE=2, OP_CUR=3, CL_CUR=4, EQ=5, NE=6, GT=7, GE=8, LT=9, LE=10, 
 		PLUS=11, MINUS=12, TIMES=13, OVER=14, REMAINDER=15, OP_PAR=16, CL_PAR=17, 
-		ATTRIB=18, COMMA=19, COLON=20, PRINT=21, READ_INT=22, NUMBER=23, VAR=24, 
-		COMMENT=25, NL=26, SPACE=27, INDENT=28, DEDENT=29;
+		ATTRIB=18, COMMA=19, COLON=20, PRINT=21, READ_INT=22, READ_STR=23, NUMBER=24, 
+		VAR=25, STRING=26, COMMENT=27, NL=28, SPACE=29, INDENT=30, DEDENT=31;
 	public static final int
 		RULE_program = 0, RULE_main = 1, RULE_statement = 2, RULE_st_print = 3, 
 		RULE_st_attrib = 4, RULE_st_if = 5, RULE_comparison = 6, RULE_st_while = 7, 
@@ -39,7 +39,7 @@ public class SauroParser extends Parser {
 		return new String[] {
 			null, "'if'", "'while'", "'{'", "'}'", "'=='", "'!='", "'>'", "'>='", 
 			"'<'", "'<='", "'+'", "'-'", "'*'", "'/'", "'%'", "'('", "')'", "'='", 
-			"','", "':'", "'print'", "'read_int'"
+			"','", "':'", "'print'", "'read_int'", "'read_str'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -47,8 +47,8 @@ public class SauroParser extends Parser {
 		return new String[] {
 			null, "IF", "WHILE", "OP_CUR", "CL_CUR", "EQ", "NE", "GT", "GE", "LT", 
 			"LE", "PLUS", "MINUS", "TIMES", "OVER", "REMAINDER", "OP_PAR", "CL_PAR", 
-			"ATTRIB", "COMMA", "COLON", "PRINT", "READ_INT", "NUMBER", "VAR", "COMMENT", 
-			"NL", "SPACE", "INDENT", "DEDENT"
+			"ATTRIB", "COMMA", "COLON", "PRINT", "READ_INT", "READ_STR", "NUMBER", 
+			"VAR", "STRING", "COMMENT", "NL", "SPACE", "INDENT", "DEDENT"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -113,6 +113,7 @@ public class SauroParser extends Parser {
 	    }
 
 	    private static ArrayList<String> symbol_table;
+	    private static ArrayList<Character> type_table;
 
 	    public static void main(String[] args) throws Exception
 	    {
@@ -123,7 +124,11 @@ public class SauroParser extends Parser {
 
 	        // Tabela de Símbolos
 	        symbol_table = new ArrayList<String>();
+	        type_table = new ArrayList<Character>();
+
 	        symbol_table.add("args");
+	        type_table.add('-');
+	        
 	        parser.program();
 	        System.out.println("; symbols: " + symbol_table);
 	    }
@@ -332,15 +337,17 @@ public class SauroParser extends Parser {
 	}
 
 	public static class St_printContext extends ParserRuleContext {
+		public ExpressionContext e1;
+		public ExpressionContext e2;
 		public TerminalNode PRINT() { return getToken(SauroParser.PRINT, 0); }
 		public TerminalNode OP_PAR() { return getToken(SauroParser.OP_PAR, 0); }
+		public TerminalNode CL_PAR() { return getToken(SauroParser.CL_PAR, 0); }
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
 		}
 		public ExpressionContext expression(int i) {
 			return getRuleContext(ExpressionContext.class,i);
 		}
-		public TerminalNode CL_PAR() { return getToken(SauroParser.CL_PAR, 0); }
 		public List<TerminalNode> COMMA() { return getTokens(SauroParser.COMMA); }
 		public TerminalNode COMMA(int i) {
 			return getToken(SauroParser.COMMA, i);
@@ -374,9 +381,16 @@ public class SauroParser extends Parser {
 			                emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
 			            
 			setState(45);
-			expression();
+			((St_printContext)_localctx).e1 = expression();
 			 
-			                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+			                if (((St_printContext)_localctx).e1.type == 'i')
+			                {
+			                    emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+			                }
+			                else
+			                {
+			                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
+			                }
 			            
 			setState(54);
 			_errHandler.sync(this);
@@ -390,13 +404,19 @@ public class SauroParser extends Parser {
 				                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
 				                emit("    ldc \" \" ", + 1); 
 				                emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
-
 				                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
 				            
 				setState(49);
-				expression();
+				((St_printContext)_localctx).e2 = expression();
 				 
-				                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+				                if (((St_printContext)_localctx).e2.type == 'i')
+				                {
+				                    emit("    invokevirtual java/io/PrintStream/print(I)V\n", - 2); 
+				                }
+				                else
+				                {
+				                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", - 1); 
+				                }
 				            
 				}
 				}
@@ -425,6 +445,7 @@ public class SauroParser extends Parser {
 
 	public static class St_attribContext extends ParserRuleContext {
 		public Token VAR;
+		public ExpressionContext e;
 		public TerminalNode VAR() { return getToken(SauroParser.VAR, 0); }
 		public TerminalNode ATTRIB() { return getToken(SauroParser.ATTRIB, 0); }
 		public ExpressionContext expression() {
@@ -455,15 +476,30 @@ public class SauroParser extends Parser {
 			setState(61);
 			match(ATTRIB);
 			setState(62);
-			expression();
+			((St_attribContext)_localctx).e = expression();
 
 			                if (!symbol_table.contains((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null)))
 			                {
 			                    symbol_table.add((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null));
+			                    if(((St_attribContext)_localctx).e.type == 'i')
+			                    {
+			                        type_table.add('i');
+			                    }
+			                    else
+			                    {
+			                        type_table.add('a');
+			                    }
 			                }
 			                int address = symbol_table.indexOf((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null));
-
-			                emit("    istore " + address + "\n", - 1);
+			                
+			                if (((St_attribContext)_localctx).e.type == 'i')
+			                {
+			                    emit("    istore " + address + "\n", - 1);
+			                }
+			                else
+			                {
+			                    emit("    astore " + address + "\n", - 1);
+			                }
 			            
 			}
 		}
@@ -779,6 +815,8 @@ public class SauroParser extends Parser {
 	}
 
 	public static class ExpressionContext extends ParserRuleContext {
+		public char type;
+		public TermContext t1;
 		public Token op;
 		public List<TermContext> term() {
 			return getRuleContexts(TermContext.class);
@@ -816,7 +854,7 @@ public class SauroParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(101);
-			term();
+			((ExpressionContext)_localctx).t1 = term();
 			setState(108);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
@@ -845,6 +883,7 @@ public class SauroParser extends Parser {
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
+			((ExpressionContext)_localctx).type =  ((ExpressionContext)_localctx).t1.type;
 			}
 		}
 		catch (RecognitionException re) {
@@ -859,6 +898,8 @@ public class SauroParser extends Parser {
 	}
 
 	public static class TermContext extends ParserRuleContext {
+		public char type;
+		public FactorContext f1;
 		public Token op;
 		public List<FactorContext> factor() {
 			return getRuleContexts(FactorContext.class);
@@ -899,15 +940,15 @@ public class SauroParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(111);
-			factor();
-			setState(118);
+			setState(113);
+			((TermContext)_localctx).f1 = factor();
+			setState(120);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) {
 				{
 				{
-				setState(112);
+				setState(114);
 				((TermContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) ) {
@@ -918,7 +959,7 @@ public class SauroParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(113);
+				setState(115);
 				factor();
 				 
 				                if      ((((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getType():0) == TIMES) {emit("    imul", - 1);}    
@@ -927,10 +968,11 @@ public class SauroParser extends Parser {
 				            
 				}
 				}
-				setState(120);
+				setState(122);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
+			((TermContext)_localctx).type =  ((TermContext)_localctx).f1.type;
 			}
 		}
 		catch (RecognitionException re) {
@@ -945,16 +987,21 @@ public class SauroParser extends Parser {
 	}
 
 	public static class FactorContext extends ParserRuleContext {
+		public char type;
 		public Token NUMBER;
+		public ExpressionContext e;
 		public Token VAR;
+		public Token STRING;
 		public TerminalNode NUMBER() { return getToken(SauroParser.NUMBER, 0); }
 		public TerminalNode OP_PAR() { return getToken(SauroParser.OP_PAR, 0); }
+		public TerminalNode CL_PAR() { return getToken(SauroParser.CL_PAR, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
-		public TerminalNode CL_PAR() { return getToken(SauroParser.CL_PAR, 0); }
 		public TerminalNode VAR() { return getToken(SauroParser.VAR, 0); }
 		public TerminalNode READ_INT() { return getToken(SauroParser.READ_INT, 0); }
+		public TerminalNode READ_STR() { return getToken(SauroParser.READ_STR, 0); }
+		public TerminalNode STRING() { return getToken(SauroParser.STRING, 0); }
 		public FactorContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -973,15 +1020,16 @@ public class SauroParser extends Parser {
 		FactorContext _localctx = new FactorContext(_ctx, getState());
 		enterRule(_localctx, 22, RULE_factor);
 		try {
-			setState(133);
+			setState(144);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case NUMBER:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(121);
+				setState(125);
 				((FactorContext)_localctx).NUMBER = match(NUMBER);
 				 
+				                ((FactorContext)_localctx).type =  'i';
 				                emit("    ldc "+ (((FactorContext)_localctx).NUMBER!=null?((FactorContext)_localctx).NUMBER.getText():null), + 1); 
 				            
 				}
@@ -989,31 +1037,43 @@ public class SauroParser extends Parser {
 			case OP_PAR:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(123);
+				setState(127);
 				match(OP_PAR);
-				setState(124);
-				expression();
-				setState(125);
+				setState(128);
+				((FactorContext)_localctx).e = expression();
+				setState(129);
 				match(CL_PAR);
+
+				                ((FactorContext)_localctx).type =  ((FactorContext)_localctx).e.type;
+				            
 				}
 				break;
 			case VAR:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(127);
+				setState(132);
 				((FactorContext)_localctx).VAR = match(VAR);
+
+				                // consultar (((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null) na tabela de símbolos
+				                //emit("iload 1", 1);
+				                //emit("aload 1", 1);
+				                
+				                //if {((FactorContext)_localctx).type =  i}
+				                //else{_localctx.type = a}
 
 				                if(!symbol_table.contains((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null)))
 				                { 
 				                    System.err.println("Variable " + (((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null) + " not declared.\n"); 
 				                    System.exit(1);
 				                }
-				                if(symbol_table.contains((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null)))
+				                if(symbol_table.contains((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null)) && type_table.get(symbol_table.indexOf((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null))) == 'i')
 				                {
+				                    ((FactorContext)_localctx).type =  'i';
 				                    emit("    iload " + symbol_table.indexOf((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null)), + 1);
 				                }
 				                else
 				                {
+				                    ((FactorContext)_localctx).type =  'a';
 				                    emit("    aload " + symbol_table.indexOf((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null)), + 1);
 				                }
 				            
@@ -1022,14 +1082,41 @@ public class SauroParser extends Parser {
 			case READ_INT:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(129);
+				setState(134);
 				match(READ_INT);
-				setState(130);
+				setState(135);
 				match(OP_PAR);
-				setState(131);
+				setState(136);
 				match(CL_PAR);
 
+				                ((FactorContext)_localctx).type =  'i';
 				                emit("    invokestatic Runtime/readInt()I", +1);
+				            
+				}
+				break;
+			case READ_STR:
+				enterOuterAlt(_localctx, 5);
+				{
+				setState(138);
+				match(READ_STR);
+				setState(139);
+				match(OP_PAR);
+				setState(140);
+				match(CL_PAR);
+
+				                ((FactorContext)_localctx).type =  'a';
+				                emit("    invokestatic Runtime/readString()Ljava/lang/String;", + 1);
+				            
+				}
+				break;
+			case STRING:
+				enterOuterAlt(_localctx, 6);
+				{
+				setState(142);
+				((FactorContext)_localctx).STRING = match(STRING);
+
+				                ((FactorContext)_localctx).type =  'a';
+				                emit("    ldc "+ (((FactorContext)_localctx).STRING!=null?((FactorContext)_localctx).STRING.getText():null), + 1); 
 				            
 				}
 				break;
@@ -1049,41 +1136,45 @@ public class SauroParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\37\u008a\4\2\t\2"+
-		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
-		"\t\13\4\f\t\f\4\r\t\r\3\2\3\2\3\2\3\3\3\3\6\3 \n\3\r\3\16\3!\3\3\3\3\3"+
-		"\4\3\4\3\4\3\4\3\4\5\4+\n\4\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\7"+
-		"\5\67\n\5\f\5\16\5:\13\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3"+
-		"\7\3\7\3\7\6\7J\n\7\r\7\16\7K\3\7\3\7\3\7\3\b\3\b\3\b\3\b\3\b\3\t\3\t"+
-		"\3\t\3\t\3\t\3\t\6\t\\\n\t\r\t\16\t]\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3\n\3"+
-		"\13\3\13\3\13\3\13\3\13\7\13m\n\13\f\13\16\13p\13\13\3\f\3\f\3\f\3\f\3"+
-		"\f\7\fw\n\f\f\f\16\fz\13\f\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r"+
-		"\3\r\5\r\u0088\n\r\3\r\2\2\16\2\4\6\b\n\f\16\20\22\24\26\30\2\5\3\2\7"+
-		"\f\3\2\r\16\3\2\17\21\2\u008a\2\32\3\2\2\2\4\35\3\2\2\2\6*\3\2\2\2\b,"+
-		"\3\2\2\2\n>\3\2\2\2\fC\3\2\2\2\16P\3\2\2\2\20U\3\2\2\2\22b\3\2\2\2\24"+
-		"g\3\2\2\2\26q\3\2\2\2\30\u0087\3\2\2\2\32\33\b\2\1\2\33\34\5\4\3\2\34"+
-		"\3\3\2\2\2\35\37\b\3\1\2\36 \5\6\4\2\37\36\3\2\2\2 !\3\2\2\2!\37\3\2\2"+
-		"\2!\"\3\2\2\2\"#\3\2\2\2#$\b\3\1\2$\5\3\2\2\2%+\5\b\5\2&+\5\n\6\2\'+\5"+
-		"\f\7\2(+\5\20\t\2)+\7\34\2\2*%\3\2\2\2*&\3\2\2\2*\'\3\2\2\2*(\3\2\2\2"+
-		"*)\3\2\2\2+\7\3\2\2\2,-\7\27\2\2-.\7\22\2\2./\b\5\1\2/\60\5\24\13\2\60"+
-		"8\b\5\1\2\61\62\7\25\2\2\62\63\b\5\1\2\63\64\5\24\13\2\64\65\b\5\1\2\65"+
-		"\67\3\2\2\2\66\61\3\2\2\2\67:\3\2\2\28\66\3\2\2\289\3\2\2\29;\3\2\2\2"+
-		":8\3\2\2\2;<\7\23\2\2<=\b\5\1\2=\t\3\2\2\2>?\7\32\2\2?@\7\24\2\2@A\5\24"+
-		"\13\2AB\b\6\1\2B\13\3\2\2\2CD\b\7\1\2DE\7\3\2\2EF\5\16\b\2FG\7\26\2\2"+
-		"GI\7\36\2\2HJ\5\6\4\2IH\3\2\2\2JK\3\2\2\2KI\3\2\2\2KL\3\2\2\2LM\3\2\2"+
-		"\2MN\7\37\2\2NO\b\7\1\2O\r\3\2\2\2PQ\5\24\13\2QR\t\2\2\2RS\5\24\13\2S"+
-		"T\b\b\1\2T\17\3\2\2\2UV\b\t\1\2VW\7\4\2\2WX\5\22\n\2XY\7\26\2\2Y[\7\36"+
-		"\2\2Z\\\5\6\4\2[Z\3\2\2\2\\]\3\2\2\2][\3\2\2\2]^\3\2\2\2^_\3\2\2\2_`\7"+
-		"\37\2\2`a\b\t\1\2a\21\3\2\2\2bc\5\24\13\2cd\t\2\2\2de\5\24\13\2ef\b\n"+
-		"\1\2f\23\3\2\2\2gn\5\26\f\2hi\t\3\2\2ij\5\26\f\2jk\b\13\1\2km\3\2\2\2"+
-		"lh\3\2\2\2mp\3\2\2\2nl\3\2\2\2no\3\2\2\2o\25\3\2\2\2pn\3\2\2\2qx\5\30"+
-		"\r\2rs\t\4\2\2st\5\30\r\2tu\b\f\1\2uw\3\2\2\2vr\3\2\2\2wz\3\2\2\2xv\3"+
-		"\2\2\2xy\3\2\2\2y\27\3\2\2\2zx\3\2\2\2{|\7\31\2\2|\u0088\b\r\1\2}~\7\22"+
-		"\2\2~\177\5\24\13\2\177\u0080\7\23\2\2\u0080\u0088\3\2\2\2\u0081\u0082"+
-		"\7\32\2\2\u0082\u0088\b\r\1\2\u0083\u0084\7\30\2\2\u0084\u0085\7\22\2"+
-		"\2\u0085\u0086\7\23\2\2\u0086\u0088\b\r\1\2\u0087{\3\2\2\2\u0087}\3\2"+
-		"\2\2\u0087\u0081\3\2\2\2\u0087\u0083\3\2\2\2\u0088\31\3\2\2\2\n!*8K]n"+
-		"x\u0087";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3!\u0095\4\2\t\2\4"+
+		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
+		"\13\4\f\t\f\4\r\t\r\3\2\3\2\3\2\3\3\3\3\6\3 \n\3\r\3\16\3!\3\3\3\3\3\4"+
+		"\3\4\3\4\3\4\3\4\5\4+\n\4\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\7\5"+
+		"\67\n\5\f\5\16\5:\13\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7"+
+		"\3\7\3\7\6\7J\n\7\r\7\16\7K\3\7\3\7\3\7\3\b\3\b\3\b\3\b\3\b\3\t\3\t\3"+
+		"\t\3\t\3\t\3\t\6\t\\\n\t\r\t\16\t]\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3\n\3\13"+
+		"\3\13\3\13\3\13\3\13\7\13m\n\13\f\13\16\13p\13\13\3\13\3\13\3\f\3\f\3"+
+		"\f\3\f\3\f\7\fy\n\f\f\f\16\f|\13\f\3\f\3\f\3\r\3\r\3\r\3\r\3\r\3\r\3\r"+
+		"\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\3\r\5\r\u0093\n\r\3\r\2\2"+
+		"\16\2\4\6\b\n\f\16\20\22\24\26\30\2\5\3\2\7\f\3\2\r\16\3\2\17\21\2\u0097"+
+		"\2\32\3\2\2\2\4\35\3\2\2\2\6*\3\2\2\2\b,\3\2\2\2\n>\3\2\2\2\fC\3\2\2\2"+
+		"\16P\3\2\2\2\20U\3\2\2\2\22b\3\2\2\2\24g\3\2\2\2\26s\3\2\2\2\30\u0092"+
+		"\3\2\2\2\32\33\b\2\1\2\33\34\5\4\3\2\34\3\3\2\2\2\35\37\b\3\1\2\36 \5"+
+		"\6\4\2\37\36\3\2\2\2 !\3\2\2\2!\37\3\2\2\2!\"\3\2\2\2\"#\3\2\2\2#$\b\3"+
+		"\1\2$\5\3\2\2\2%+\5\b\5\2&+\5\n\6\2\'+\5\f\7\2(+\5\20\t\2)+\7\36\2\2*"+
+		"%\3\2\2\2*&\3\2\2\2*\'\3\2\2\2*(\3\2\2\2*)\3\2\2\2+\7\3\2\2\2,-\7\27\2"+
+		"\2-.\7\22\2\2./\b\5\1\2/\60\5\24\13\2\608\b\5\1\2\61\62\7\25\2\2\62\63"+
+		"\b\5\1\2\63\64\5\24\13\2\64\65\b\5\1\2\65\67\3\2\2\2\66\61\3\2\2\2\67"+
+		":\3\2\2\28\66\3\2\2\289\3\2\2\29;\3\2\2\2:8\3\2\2\2;<\7\23\2\2<=\b\5\1"+
+		"\2=\t\3\2\2\2>?\7\33\2\2?@\7\24\2\2@A\5\24\13\2AB\b\6\1\2B\13\3\2\2\2"+
+		"CD\b\7\1\2DE\7\3\2\2EF\5\16\b\2FG\7\26\2\2GI\7 \2\2HJ\5\6\4\2IH\3\2\2"+
+		"\2JK\3\2\2\2KI\3\2\2\2KL\3\2\2\2LM\3\2\2\2MN\7!\2\2NO\b\7\1\2O\r\3\2\2"+
+		"\2PQ\5\24\13\2QR\t\2\2\2RS\5\24\13\2ST\b\b\1\2T\17\3\2\2\2UV\b\t\1\2V"+
+		"W\7\4\2\2WX\5\22\n\2XY\7\26\2\2Y[\7 \2\2Z\\\5\6\4\2[Z\3\2\2\2\\]\3\2\2"+
+		"\2][\3\2\2\2]^\3\2\2\2^_\3\2\2\2_`\7!\2\2`a\b\t\1\2a\21\3\2\2\2bc\5\24"+
+		"\13\2cd\t\2\2\2de\5\24\13\2ef\b\n\1\2f\23\3\2\2\2gn\5\26\f\2hi\t\3\2\2"+
+		"ij\5\26\f\2jk\b\13\1\2km\3\2\2\2lh\3\2\2\2mp\3\2\2\2nl\3\2\2\2no\3\2\2"+
+		"\2oq\3\2\2\2pn\3\2\2\2qr\b\13\1\2r\25\3\2\2\2sz\5\30\r\2tu\t\4\2\2uv\5"+
+		"\30\r\2vw\b\f\1\2wy\3\2\2\2xt\3\2\2\2y|\3\2\2\2zx\3\2\2\2z{\3\2\2\2{}"+
+		"\3\2\2\2|z\3\2\2\2}~\b\f\1\2~\27\3\2\2\2\177\u0080\7\32\2\2\u0080\u0093"+
+		"\b\r\1\2\u0081\u0082\7\22\2\2\u0082\u0083\5\24\13\2\u0083\u0084\7\23\2"+
+		"\2\u0084\u0085\b\r\1\2\u0085\u0093\3\2\2\2\u0086\u0087\7\33\2\2\u0087"+
+		"\u0093\b\r\1\2\u0088\u0089\7\30\2\2\u0089\u008a\7\22\2\2\u008a\u008b\7"+
+		"\23\2\2\u008b\u0093\b\r\1\2\u008c\u008d\7\31\2\2\u008d\u008e\7\22\2\2"+
+		"\u008e\u008f\7\23\2\2\u008f\u0093\b\r\1\2\u0090\u0091\7\34\2\2\u0091\u0093"+
+		"\b\r\1\2\u0092\177\3\2\2\2\u0092\u0081\3\2\2\2\u0092\u0086\3\2\2\2\u0092"+
+		"\u0088\3\2\2\2\u0092\u008c\3\2\2\2\u0092\u0090\3\2\2\2\u0093\31\3\2\2"+
+		"\2\n!*8K]nz\u0092";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

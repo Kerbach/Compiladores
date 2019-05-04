@@ -55,6 +55,7 @@ COMANDOS TERMINAL
     }
 
     private static ArrayList<String> symbol_table;
+    private static ArrayList<Character> type_table;
 
     public static void main(String[] args) throws Exception
     {
@@ -65,7 +66,11 @@ COMANDOS TERMINAL
 
         // Tabela de Símbolos
         symbol_table = new ArrayList<String>();
+        type_table = new ArrayList<Character>();
+
         symbol_table.add("args");
+        type_table.add('-');
+        
         parser.program();
         System.out.println("; symbols: " + symbol_table);
     }
@@ -99,16 +104,18 @@ COLON       : ':' ;
 
 PRINT       : 'print' ;
 READ_INT    : 'read_int' ;
+READ_STR    : 'read_str' ;
 
 NUMBER      : '0'..'9'+ ;
 VAR         : 'a'..'z'+ ;
+STRING      : '"' ~["]* '"' ;
 
 COMMENT     : '#' ~[\r\n]* { skip();} ;
 
 NL: ('\r'? '\n' ' '*) ;
 
-//SPACE       : (' '|'\t'|'\r'|'\n')+ { skip(); } ;
 SPACE       : (' '|'\t')+ { skip(); } ;
+
 
 
 /*---------------- PARSER RULES ----------------*/
@@ -150,21 +157,34 @@ st_print            // PRINT OP_PAR expression (COMMA expression )* CL_PAR
             { 
                 emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
             }
-        expression
+        e1 = expression
             { 
-                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+                if ($e1.type == 'i')
+                {
+                    emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+                }
+                else
+                {
+                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
+                }
             }
         (COMMA
             {
                 emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
                 emit("    ldc \" \" ", + 1); 
                 emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
-
                 emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
             }
-        expression 
+        e2 = expression 
             { 
-                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+                if ($e2.type == 'i')
+                {
+                    emit("    invokevirtual java/io/PrintStream/print(I)V\n", - 2); 
+                }
+                else
+                {
+                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", - 1); 
+                }
             } 
         )* CL_PAR
             { 
@@ -174,15 +194,30 @@ st_print            // PRINT OP_PAR expression (COMMA expression )* CL_PAR
     ;
 
 st_attrib
-    :   VAR ATTRIB expression
+    :   VAR ATTRIB e = expression
             {
                 if (!symbol_table.contains($VAR.text))
                 {
                     symbol_table.add($VAR.text);
+                    if($e.type == 'i')
+                    {
+                        type_table.add('i');
+                    }
+                    else
+                    {
+                        type_table.add('a');
+                    }
                 }
                 int address = symbol_table.indexOf($VAR.text);
-
-                emit("    istore " + address + "\n", - 1);
+                
+                if ($e.type == 'i')
+                {
+                    emit("    istore " + address + "\n", - 1);
+                }
+                else
+                {
+                    emit("    astore " + address + "\n", - 1);
+                }
             }
     ;
 
@@ -232,49 +267,74 @@ comparison_while
         }
     ;
 
-expression
-    :   term ( op = ( PLUS | MINUS ) term 
+expression returns [char type]
+    :   t1 = term ( op = ( PLUS | MINUS ) term 
             {
                 emit(($op.type == PLUS) ? "    iadd" : "    isub", - 1);
             } 
         )*
+        {$type = $t1.type;}
     ;
 
-term
-    :   factor ( op = ( TIMES | OVER | REMAINDER ) factor 
+term returns [char type]
+    :   f1 = factor ( op = ( TIMES | OVER | REMAINDER ) factor 
             { 
                 if      ($op.type == TIMES) {emit("    imul", - 1);}    
                 else if ($op.type == OVER)  {emit("    idiv", - 1);}    
                 else                        {emit("    irem", - 1);}    
             }
          )*
+         {$type = $f1.type;}
     ;
 
-factor              // NUMBER  |   OP_PAR expression CL_PAR |   VAR |   READ_INT OP_PAR CL_PAR
+factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |   VAR |   READ_INT OP_PAR CL_PAR
     :   NUMBER
             { 
+                $type = 'i';
                 emit("    ldc "+ $NUMBER.text, + 1); 
             }
-    |   OP_PAR expression CL_PAR
+    |   OP_PAR e = expression CL_PAR
+            {
+                $type = $e.type;
+            }
     |   VAR
             {
+                // consultar $VAR.text na tabela de símbolos
+                //emit("iload 1", 1);
+                //emit("aload 1", 1);
+                
+                //if {$type = i}
+                //else{$type = a}
+
                 if(!symbol_table.contains($VAR.text))
                 { 
                     System.err.println("Variable " + $VAR.text + " not declared.\n"); 
                     System.exit(1);
                 }
-                if(symbol_table.contains($VAR.text))
+                if(symbol_table.contains($VAR.text) && type_table.get(symbol_table.indexOf($VAR.text)) == 'i')
                 {
+                    $type = 'i';
                     emit("    iload " + symbol_table.indexOf($VAR.text), + 1);
                 }
                 else
                 {
+                    $type = 'a';
                     emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
                 }
             }
     |   READ_INT OP_PAR CL_PAR
             {
+                $type = 'i';
                 emit("    invokestatic Runtime/readInt()I", +1);
             }
-        
+    |   READ_STR OP_PAR CL_PAR
+            {
+                $type = 'a';
+                emit("    invokestatic Runtime/readString()Ljava/lang/String;", + 1);
+            }
+    |   STRING 
+            {
+                $type = 'a';
+                emit("    ldc "+ $STRING.text, + 1); 
+            }
     ;
