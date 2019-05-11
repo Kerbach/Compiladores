@@ -90,18 +90,6 @@ public class SauroBaseListener implements SauroListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterComparison(SauroParser.ComparisonContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitComparison(SauroParser.ComparisonContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterSt_while(SauroParser.St_whileContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -109,18 +97,6 @@ public class SauroBaseListener implements SauroListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSt_while(SauroParser.St_whileContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterComparison_while(SauroParser.Comparison_whileContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitComparison_while(SauroParser.Comparison_whileContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -43,6 +43,7 @@ COMANDOS TERMINAL
     private static int stack_cur, stack_max, if_counter;
     private static int if_count = 0;
     private static int while_count = 0;
+    private static boolean has_error = false;
 
     public static void emit (String bytecode, int delta)
     {
@@ -64,6 +65,8 @@ COMANDOS TERMINAL
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         SauroParser parser = new SauroParser(tokens);
 
+        has_error = false;
+
         // Tabela de Símbolos
         symbol_table = new ArrayList<String>();
         type_table = new ArrayList<Character>();
@@ -73,6 +76,12 @@ COMANDOS TERMINAL
         
         parser.program();
         System.out.println("; symbols: " + symbol_table);
+
+        if(has_error == true)
+		{
+            System.err.println("Existem erros que precisam ser corrigidos!");
+            System.exit(1);
+		}
     }
 }
 
@@ -154,71 +163,87 @@ statement
 
 st_print            // PRINT OP_PAR expression (COMMA expression )* CL_PAR
     :   PRINT OP_PAR
-            { 
-                emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
-            }
+        { 
+            emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
+        }
         e1 = expression
-            { 
-                if ($e1.type == 'i')
-                {
-                    emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
-                }
-                else
-                {
-                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
-                }
-            }
-        (COMMA
+        { 
+            if ($e1.type == 'i')
             {
-                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
-                emit("    ldc \" \" ", + 1); 
+                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+            }
+            else
+            {
                 emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
-                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
             }
+        }
+        (COMMA
+        {
+            emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
+            emit("    ldc \" \" ", + 1); 
+            emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
+            emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
+        }
         e2 = expression 
-            { 
-                if ($e2.type == 'i')
-                {
-                    emit("    invokevirtual java/io/PrintStream/print(I)V\n", - 2); 
-                }
-                else
-                {
-                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", - 1); 
-                }
-            } 
-        )* CL_PAR
-            { 
-                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
-                emit("    invokevirtual java/io/PrintStream/println()V", - 1);	    
+        { 
+            if ($e2.type == 'i')
+            {
+                emit("    invokevirtual java/io/PrintStream/print(I)V\n", - 2); 
             }
+            else
+            {
+                emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", - 1); 
+            }
+        } 
+        )* CL_PAR
+        { 
+            emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
+            emit("    invokevirtual java/io/PrintStream/println()V", - 1);	    
+        }
     ;
 
 st_attrib
     :   VAR ATTRIB e = expression
+        {
+            if (!symbol_table.contains($VAR.text))
             {
-                if (!symbol_table.contains($VAR.text))
+                symbol_table.add($VAR.text);
+                if($e.type == 'i')
                 {
-                    symbol_table.add($VAR.text);
-                    if($e.type == 'i')
-                    {
-                        type_table.add('i');
-                    }
-                    else
-                    {
-                        type_table.add('a');
-                    }
+                    type_table.add('i');
                 }
-                int address = symbol_table.indexOf($VAR.text);
-                
-                if ($e.type == 'i')
+                else
+                {
+                    type_table.add('a');
+                }
+            }
+            int address = symbol_table.indexOf($VAR.text);
+            
+            if ($e.type == 'i')
+            {
+                if(type_table.get(symbol_table.indexOf($VAR.text)) == 'i')
                 {
                     emit("    istore " + address + "\n", - 1);
                 }
                 else
                 {
-                    emit("    astore " + address + "\n", - 1);
+                    System.err.println("A variável " + $VAR.text + " está com o tipo incorreto, ela é String. [Linha " + $VAR.line + "]");
+                    has_error = true;
                 }
             }
+            else
+            {
+                if(type_table.get(symbol_table.indexOf($VAR.text)) == 'a')
+                {
+                    emit("    astore " + address + "\n", - 1);
+                }
+                else
+                {
+                    System.err.println("A variável " + $VAR.text + " está com o tipo incorreto, ela é integer. [Linha " + $VAR.line + "]");
+                    has_error=true;
+                }
+            }
+        }
     ;
 
 st_if
@@ -226,10 +251,29 @@ st_if
             if_count++;
             int if_local = if_count;
         }
-        IF comparison COLON INDENT ( statement )+ DEDENT
+        IF 
+        e1 = expression op = (EQ | NE | GT | GE | LT | LE) e2 = expression 
+        {
+            if($e1.type == 'i' && $e2.type == 'i')
+            {
+                if ($op.type == EQ) { emit("\nif_icmpne NOT_IF_" + if_count, -2); }
+                else if ($op.type == NE) { emit("\nif_icmpeq NOT_IF_" + if_count, -2); }
+                else if ($op.type == GT) { emit("\nif_icmple NOT_IF_" + if_count, -2); }
+                else if ($op.type == GE) { emit("\nif_icmplt NOT_IF_" + if_count, -2); }
+                else if ($op.type == LT) { emit("\nif_icmpge NOT_IF_" + if_count, -2); }
+                else if ($op.type == LE) { emit("\nif_icmpgt NOT_IF_" + if_count, -2); }
+            }
+            else
+            {
+                System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + $e1.text + " e " + $e2.text + "! [Linha " + $op.line + "]");
+                has_error = true;
+            }
+        }
+        COLON INDENT ( statement )+ DEDENT
         { System.out.println("NOT_IF_" + if_local + ":"); }
     ;
 
+/*
 comparison
     :   expression op = ( EQ | NE | GT | GE | LT | LE) expression
         {
@@ -241,6 +285,7 @@ comparison
             else if ($op.type == LE) { emit("\nif_icmpgt NOT_IF_" + if_count, -2); }
         }
     ;
+ */
 
 st_while
     :   {
@@ -248,13 +293,32 @@ st_while
             int while_local = while_count;
             System.out.println("BEGIN_WHILE_" + while_local + ":"); 
         }
-        WHILE comparison_while COLON INDENT ( statement )+ DEDENT
+        WHILE 
+        e1 = expression op = (EQ | NE | GT | GE | LT | LE) e2 = expression 
+		{
+			if($e1.type == 'i' && $e2.type == 'i')
+			{
+                     if ($op.type == EQ) { emit("\nif_icmpne END_WHILE_" + while_count, -2); }
+                else if ($op.type == NE) { emit("\nif_icmpeq END_WHILE_" + while_count, -2); }
+                else if ($op.type == GT) { emit("\nif_icmple END_WHILE_" + while_count, -2); }
+                else if ($op.type == GE) { emit("\nif_icmplt END_WHILE_" + while_count, -2); }
+                else if ($op.type == LT) { emit("\nif_icmpge END_WHILE_" + while_count, -2); }
+                else if ($op.type == LE) { emit("\nif_icmpgt END_WHILE_" + while_count, -2); }		
+			}
+			else
+			{
+				System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + $e1.text + " e " + $e2.text + "! [Linha " + $op.line + "]");
+				has_error = true;
+			}
+		}
+        COLON INDENT ( statement )+ DEDENT
         {
             emit("    goto BEGIN_WHILE_" + while_local, 1);
             System.out.println("END_WHILE_" + while_local + ":");
         }
     ;
 
+/*
 comparison_while
     :   expression op = ( EQ | NE | GT | GE | LT | LE) expression
         {
@@ -266,23 +330,47 @@ comparison_while
             else if ($op.type == LE) { emit("\nif_icmpgt END_WHILE_" + while_count, -2); }
         }
     ;
+ */
 
 expression returns [char type]
-    :   t1 = term ( op = ( PLUS | MINUS ) term 
+    :   t1 = term ( op = ( PLUS | MINUS ) t2 = term 
+        {
+            if($t1.type == 'i' && $t2.type == 'i')
             {
-                emit(($op.type == PLUS) ? "    iadd" : "    isub", - 1);
-            } 
+                if ($op.type == PLUS)
+                { 
+                    emit("iadd", - 1); 
+                }
+                else
+                {
+                    emit("isub", - 1);
+                }
+            }
+            else
+            {
+                System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + $t1.text + " e " + $t2.text + "! [Linha " + $op.line + "]");
+                has_error = true;
+            }
+        } 
         )*
         {$type = $t1.type;}
     ;
 
 term returns [char type]
-    :   f1 = factor ( op = ( TIMES | OVER | REMAINDER ) factor 
-            { 
+    :   f1 = factor ( op = ( TIMES | OVER | REMAINDER ) f2 = factor 
+        {
+            if(($f1.type == 'i') && ($f2.type == 'i'))
+            {
                 if      ($op.type == TIMES) {emit("    imul", - 1);}    
                 else if ($op.type == OVER)  {emit("    idiv", - 1);}    
                 else                        {emit("    irem", - 1);}    
             }
+            else
+            {
+                System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + $f1.text + " e " + $f2.text + "! [Linha " + $op.line + "]");
+                has_error = true;
+            } 
+        }
          )*
          {$type = $f1.type;}
     ;
@@ -308,7 +396,7 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
 
                 if(!symbol_table.contains($VAR.text))
                 { 
-                    System.err.println("Variable " + $VAR.text + " not declared.\n"); 
+                    System.err.println("Variável " + $VAR.text + " não declarada.\n"); 
                     System.exit(1);
                 }
                 if(symbol_table.contains($VAR.text) && type_table.get(symbol_table.indexOf($VAR.text)) == 'i')
