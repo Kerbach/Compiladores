@@ -50,6 +50,36 @@ public interface SauroListener extends ParseTreeListener {
 	 */
 	void exitSt_print(SauroParser.St_printContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SauroParser#st_new_list}.
+	 * @param ctx the parse tree
+	 */
+	void enterSt_new_list(SauroParser.St_new_listContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#st_new_list}.
+	 * @param ctx the parse tree
+	 */
+	void exitSt_new_list(SauroParser.St_new_listContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SauroParser#st_list_append}.
+	 * @param ctx the parse tree
+	 */
+	void enterSt_list_append(SauroParser.St_list_appendContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#st_list_append}.
+	 * @param ctx the parse tree
+	 */
+	void exitSt_list_append(SauroParser.St_list_appendContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SauroParser#st_list_attrib}.
+	 * @param ctx the parse tree
+	 */
+	void enterSt_list_attrib(SauroParser.St_list_attribContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#st_list_attrib}.
+	 * @param ctx the parse tree
+	 */
+	void exitSt_list_attrib(SauroParser.St_list_attribContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SauroParser#st_attrib}.
 	 * @param ctx the parse tree
 	 */

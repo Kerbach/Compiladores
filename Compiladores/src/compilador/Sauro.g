@@ -10,6 +10,8 @@ COMANDOS TERMINAL
 
         "C:\Program Files\Java\jdk1.8.0_191\bin\javac.exe" -cp antlr-4.7.2.jar DenterHelper.java
 
+        "C:\Program Files\Java\jdk1.7.0_80\bin\javac.exe" List.java
+
 */
 
 /*---------------- LEXER INTERNALS ----------------*/
@@ -115,17 +117,21 @@ PRINT       : 'print' ;
 READ_INT    : 'read_int' ;
 READ_STR    : 'read_str' ;
 
+APPEND      : 'append' ;
+LIST        : 'list' ;
+OP_BRA      : '[' ;
+CL_BRA      : ']' ;
+DOT         : '.' ;
+LEN         : 'len' ;
+STR         : 'str' ;
+
 NUMBER      : '0'..'9'+ ;
 VAR         : 'a'..'z'+ ;
 STRING      : '"' ~["]* '"' ;
 
 COMMENT     : '#' ~[\r\n]* { skip();} ;
-
 NL: ('\r'? '\n' ' '*) ;
-
 SPACE       : (' '|'\t')+ { skip(); } ;
-
-
 
 /*---------------- PARSER RULES ----------------*/
 
@@ -146,6 +152,9 @@ program
 
 main
     :   {
+            // Verificar se tem erro aqui
+//
+//
             System.out.println("\n.method public static main([Ljava/lang/String;)V");
         }
         (statement)+
@@ -158,7 +167,7 @@ main
     ;
 
 statement
-    : st_print | st_attrib | st_if | st_while| NL
+    : st_print | st_attrib | st_if | st_while| st_new_list | st_list_append | st_list_attrib | NL
     ;
 
 st_print            // PRINT OP_PAR expression (COMMA expression )* CL_PAR
@@ -198,7 +207,50 @@ st_print            // PRINT OP_PAR expression (COMMA expression )* CL_PAR
         )* CL_PAR
         { 
             emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
-            emit("    invokevirtual java/io/PrintStream/println()V", - 1);	    
+            emit("    invokevirtual java/io/PrintStream/println()V", - 1);
+        }
+    ;
+
+st_new_list
+        // variable = list()
+    :   VAR
+        {
+            symbol_table.add($VAR.text);
+            int address = symbol_table.indexOf($VAR.text);
+        }
+        ATTRIB LIST OP_PAR CL_PAR
+        {
+            emit("    new List", 1);
+            emit("    dup", 1);
+            emit("    invokespecial List/<init>()V", - 1);
+
+            emit("    astore " + address + "\n", - 1);
+        }
+    ;
+
+st_list_append
+        // variable . append ( expression )
+    :   VAR
+        {
+            int address = symbol_table.indexOf($VAR.text);
+            emit("    aload " + address + "\n", - 1);
+        } 
+        DOT APPEND OP_PAR e = expression CL_PAR
+        {
+            emit("    invokevirtual List/append(I)V", - 2);
+        }
+    ;
+
+st_list_attrib
+        // variable [ expression ] = expression
+    :   VAR 
+        {
+            int address = symbol_table.indexOf($VAR.text);
+            emit("    aload " + address + "\n", - 1);
+        }
+        OP_BRA e1 = expression CL_BRA ATTRIB e2 = expression
+        {
+            emit("    invokevirtual List/set(II)V", - 3);
         }
     ;
 
@@ -227,7 +279,7 @@ st_attrib
                 }
                 else
                 {
-                    System.err.println("A variável " + $VAR.text + " está com o tipo incorreto, ela é String. [Linha " + $VAR.line + "]");
+                    System.err.println("A variável " + $VAR.text + " está com o tipo incorreto! [Linha " + $VAR.line + "]");
                     has_error = true;
                 }
             }
@@ -239,7 +291,7 @@ st_attrib
                 }
                 else
                 {
-                    System.err.println("A variável " + $VAR.text + " está com o tipo incorreto, ela é integer. [Linha " + $VAR.line + "]");
+                    System.err.println("A variável " + $VAR.text + " está com o tipo incorreto! [Linha " + $VAR.line + "]");
                     has_error=true;
                 }
             }
@@ -385,31 +437,26 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
             {
                 $type = $e.type;
             }
+        // variable [ expression ]
+        /*
+        
+        
+        Arrumar aqui
+        
+        
+        
+         */
     |   VAR
             {
-                // consultar $VAR.text na tabela de símbolos
-                //emit("iload 1", 1);
-                //emit("aload 1", 1);
-                
-                //if {$type = i}
-                //else{$type = a}
+                $type = 'i';
+                int address = symbol_table.indexOf($VAR.text);
+                emit("    aload " + address, + 1);
+            } OP_BRA expression 
+            {
+                emit("    invokevirtual List/get(I)I", - 1);
+                emit("    invokevirtual java/io/PrintStream/println(I)V", - 1);
+            }CL_BRA 
 
-                if(!symbol_table.contains($VAR.text))
-                { 
-                    System.err.println("Variável " + $VAR.text + " não declarada.\n"); 
-                    System.exit(1);
-                }
-                if(symbol_table.contains($VAR.text) && type_table.get(symbol_table.indexOf($VAR.text)) == 'i')
-                {
-                    $type = 'i';
-                    emit("    iload " + symbol_table.indexOf($VAR.text), + 1);
-                }
-                else
-                {
-                    $type = 'a';
-                    emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
-                }
-            }
     |   READ_INT OP_PAR CL_PAR
             {
                 $type = 'i';
@@ -418,11 +465,25 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
     |   READ_STR OP_PAR CL_PAR
             {
                 $type = 'a';
-                emit("    invokestatic Runtime/readString()Ljava/lang/String;", + 1);
+                emit("    invokestatic Runtime/readString()Ljava/lang/String;", - 1);
             }
     |   STRING 
             {
                 $type = 'a';
                 emit("    ldc "+ $STRING.text, + 1); 
+            }
+        // LEN (variable)
+    |   LEN OP_PAR VAR CL_PAR
+            {
+                $type = 'i';
+                emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
+                emit("    invokevirtual List/len()I", - 1);
+            }
+        // STR (variable)
+    |   STR OP_PAR VAR CL_PAR
+            {
+                $type = 'a';
+                emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
+                emit("    invokevirtual List/str()Ljava/lang/String;", - 1);
             }
     ;

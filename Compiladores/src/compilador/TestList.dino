@@ -1,0 +1,11 @@
+l = list()
+
+l.append(123)
+
+print(len(l))
+
+print(str(l))
+
+l[0] = 456
+
+print(l[0])
