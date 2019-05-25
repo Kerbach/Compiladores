@@ -1,11 +1,52 @@
+# semantic errors for lists
+
+i = 2
 l = list()
+l.append(1)
+s = "Z"
 
-l.append(123)
+i = list()      # error: 'i' is already declared
+l = list()      # error: 'l' is already declared
+s = list()      # error: 's' is already declared
 
-print(len(l))
+l = 2           # error: 'l' is list
 
-print(str(l))
+l[l] = 2        # error: list index must be integer
+l[s] = 2        # error: list index must be integer
 
-l[0] = 456
+i[0] = 2        # error: 'i' is not list
+l[0] = l        # error: 'l' is list
+l[0] = s        # error: 'l' is list
+s[0] = 2        # error: 'i' is not list
+x[0] = 2        # error: 'x' not defined
 
-print(l[0])
+i = l           # error: 'i' is integer
+i = i[0]        # error: 'i' is not list
+i = s[0]        # error: 's' is not list
+i = x[0]        # error: 'x' not defined
+
+i = len(i)      # error: 'i' must be list
+i = len(s)      # error: 'i' must be list
+i = len(x)      # error: 'x' not defined
+
+s = str(i)      # error: 'i' must be list
+s = str(s)      # error: 'i' must be list
+s = str(x)      # error: 'x' not defined
+
+print(l)        # error: cannot print list directly
+
+print(l + l)    # error: cannot mix types
+print(l - i)    # error: cannot mix types
+print(i * l)    # error: cannot mix types
+print(l / s)    # error: cannot mix types
+print(8 % (l))  # error: cannot mix types
+
+while l > 2:    # error: cannot use list without index
+    i = 1
+
+if 2 <= l:      # error: cannot use list without index
+    i = 2
+
+if l == l:      # error: cannot use list without index
+    i = 3
+

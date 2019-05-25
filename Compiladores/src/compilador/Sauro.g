@@ -45,6 +45,7 @@ COMANDOS TERMINAL
     private static int stack_cur, stack_max, if_counter;
     private static int if_count = 0;
     private static int while_count = 0;
+    
     private static boolean has_error = false;
 
     public static void emit (String bytecode, int delta)
@@ -153,8 +154,8 @@ program
 main
     :   {
             // Verificar se tem erro aqui
-//
-//
+            //
+            //
             System.out.println("\n.method public static main([Ljava/lang/String;)V");
         }
         (statement)+
@@ -170,43 +171,40 @@ statement
     : st_print | st_attrib | st_if | st_while| st_new_list | st_list_append | st_list_attrib | NL
     ;
 
-st_print            // PRINT OP_PAR expression (COMMA expression )* CL_PAR
+st_print
     :   PRINT OP_PAR
-        { 
-            emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
-        }
-        e1 = expression
-        { 
-            if ($e1.type == 'i')
-            {
-                emit("    invokevirtual java/io/PrintStream/print(I)V", - 2); 
+            { 
+                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
             }
-            else
+            e1 = expression
             {
-                emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
+                if ($e1.type == 'i') 
+                {
+                    emit("    invokevirtual java/io/PrintStream/println(I)V", - 2);
+                } 
+                else 
+                {
+                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 2);
+                }
             }
-        }
         (COMMA
-        {
-            emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
-            emit("    ldc \" \" ", + 1); 
-            emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 1); 
-            emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
-        }
-        e2 = expression 
-        { 
-            if ($e2.type == 'i')
-            {
-                emit("    invokevirtual java/io/PrintStream/print(I)V\n", - 2); 
+            { 
+                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
             }
-            else
+        e2 = expression
             {
-                emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n", - 1); 
+                if ($e2.type == 'i') 
+                {
+                    emit("    invokevirtual java/io/PrintStream/println(I)V", - 2);
+                } 
+                else 
+                {
+                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 2);
+                }
             }
-        } 
         )* CL_PAR
-        { 
-            emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
+        {
+            emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
             emit("    invokevirtual java/io/PrintStream/println()V", - 1);
         }
     ;
@@ -220,10 +218,9 @@ st_new_list
         }
         ATTRIB LIST OP_PAR CL_PAR
         {
-            emit("    new List", 1);
-            emit("    dup", 1);
+            emit("    new List", + 1);
+            emit("    dup", + 1);
             emit("    invokespecial List/<init>()V", - 1);
-
             emit("    astore " + address + "\n", - 1);
         }
     ;
@@ -233,7 +230,7 @@ st_list_append
     :   VAR
         {
             int address = symbol_table.indexOf($VAR.text);
-            emit("    aload " + address + "\n", - 1);
+            emit("    aload " + address, + 1);
         } 
         DOT APPEND OP_PAR e = expression CL_PAR
         {
@@ -244,14 +241,22 @@ st_list_append
 st_list_attrib
         // variable [ expression ] = expression
     :   VAR 
-        {
-            int address = symbol_table.indexOf($VAR.text);
-            emit("    aload " + address + "\n", - 1);
-        }
-        OP_BRA e1 = expression CL_BRA ATTRIB e2 = expression
-        {
-            emit("    invokevirtual List/set(II)V", - 3);
-        }
+            {
+                int address = symbol_table.indexOf($VAR.text);
+                emit("    aload " + address + "\n", + 1);
+            }
+        OP_BRA e1 = expression 
+            {
+                if ($e1.type != 'i') 
+                {
+                    System.err.println("Error: index must be from Integer type.");
+                    System.exit(1);
+                }
+            }
+        CL_BRA ATTRIB e2 = expression
+            {
+                emit("    invokevirtual List/set(II)V", - 3);
+            }
     ;
 
 st_attrib
@@ -260,6 +265,7 @@ st_attrib
             if (!symbol_table.contains($VAR.text))
             {
                 symbol_table.add($VAR.text);
+                type_table.add($e.type);
                 if($e.type == 'i')
                 {
                     type_table.add('i');
@@ -273,7 +279,7 @@ st_attrib
             
             if ($e.type == 'i')
             {
-                if(type_table.get(symbol_table.indexOf($VAR.text)) == 'i')
+                if(type_table.get(address) == 'i')
                 {
                     emit("    istore " + address + "\n", - 1);
                 }
@@ -285,7 +291,7 @@ st_attrib
             }
             else
             {
-                if(type_table.get(symbol_table.indexOf($VAR.text)) == 'a')
+                if(type_table.get(address) == 'a')
                 {
                     emit("    astore " + address + "\n", - 1);
                 }
@@ -437,26 +443,43 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
             {
                 $type = $e.type;
             }
-        // variable [ expression ]
-        /*
-        
-        
-        Arrumar aqui
-        
-        
-        
-         */
     |   VAR
             {
-                $type = 'i';
-                int address = symbol_table.indexOf($VAR.text);
-                emit("    aload " + address, + 1);
-            } OP_BRA expression 
+                if (!symbol_table.contains($VAR.text)) 
+                {
+                    System.err.println("Error: variable not declared.");
+                    System.exit(1);
+                } else 
+                {
+                    $type = 'i';
+                    emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
+                }
+            }
+        OP_BRA e = expression CL_BRA
             {
-                emit("    invokevirtual List/get(I)I", - 1);
-                emit("    invokevirtual java/io/PrintStream/println(I)V", - 1);
-            }CL_BRA 
+                emit("    invokevirtual List/get(I)I", + 1);
+            }
+    |   VAR
+            {
+                if (!symbol_table.contains($VAR.text)) 
+                {
+                    System.err.println("Error: variable not declared.");
+                    System.exit(1);
+                } 
+                else 
+                {
+                    if (type_table.get(symbol_table.indexOf($VAR.text)) == 'i') 
+                    {
+                        emit("iload " + symbol_table.indexOf($VAR.text), + 1);
+                    } 
+                    else 
+                    {
+                        emit("aload " + symbol_table.indexOf($VAR.text), + 1);
+                    }
 
+                    $type = type_table.get(symbol_table.indexOf($VAR.text));
+                }
+            }
     |   READ_INT OP_PAR CL_PAR
             {
                 $type = 'i';
@@ -477,13 +500,13 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
             {
                 $type = 'i';
                 emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
-                emit("    invokevirtual List/len()I", - 1);
+                emit("    invokevirtual List/len()I", 0);
             }
         // STR (variable)
     |   STR OP_PAR VAR CL_PAR
             {
                 $type = 'a';
                 emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
-                emit("    invokevirtual List/str()Ljava/lang/String;", - 1);
+                emit("    invokevirtual List/str()Ljava/lang/String;", 0);
             }
     ;
