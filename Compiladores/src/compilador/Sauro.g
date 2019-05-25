@@ -153,9 +153,6 @@ program
 
 main
     :   {
-            // Verificar se tem erro aqui
-            //
-            //
             System.out.println("\n.method public static main([Ljava/lang/String;)V");
         }
         (statement)+
@@ -249,18 +246,24 @@ st_list_attrib
             {
                 if ($e1.type != 'i') 
                 {
-                    System.err.println("Error: index must be from Integer type.");
-                    System.exit(1);
+                    System.err.println("# error: list index must be integer");
+                    //System.exit(1);
                 }
             }
         CL_BRA ATTRIB e2 = expression
             {
+                if ($e1.type != 'i') 
+                {
+                    System.err.println("# error: list index must be integer");
+                    //System.exit(1);
+                }
                 emit("    invokevirtual List/set(II)V", - 3);
             }
     ;
 
 st_attrib
-    :   VAR ATTRIB e = expression
+    :   
+        VAR ATTRIB e = expression
         {
             if (!symbol_table.contains($VAR.text))
             {
@@ -275,6 +278,11 @@ st_attrib
                     type_table.add('a');
                 }
             }
+            else 
+            {
+                System.err.println("# error: '" + $VAR.text + "' is already declared");
+            }
+
             int address = symbol_table.indexOf($VAR.text);
             
             if ($e.type == 'i')
@@ -323,7 +331,7 @@ st_if
             }
             else
             {
-                System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + $e1.text + " e " + $e2.text + "! [Linha " + $op.line + "]");
+                System.err.println("# error: cannot mix types. -> " + $e1.text + " and " + $e2.text + "! [Line " + $op.line + "]");
                 has_error = true;
             }
         }
@@ -365,7 +373,7 @@ st_while
 			}
 			else
 			{
-				System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + $e1.text + " e " + $e2.text + "! [Linha " + $op.line + "]");
+				System.err.println("# error: cannot mix types. -> " + $e1.text + " and " + $e2.text + "! [Line " + $op.line + "]");
 				has_error = true;
 			}
 		}
@@ -406,7 +414,7 @@ expression returns [char type]
             }
             else
             {
-                System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + $t1.text + " e " + $t2.text + "! [Linha " + $op.line + "]");
+                System.err.println("# error: cannot mix types. -> " + $t1.text + " and " + $t2.text + "! [Line " + $op.line + "]");
                 has_error = true;
             }
         } 
@@ -425,7 +433,7 @@ term returns [char type]
             }
             else
             {
-                System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + $f1.text + " e " + $f2.text + "! [Linha " + $op.line + "]");
+                System.err.println("# error: cannot mix types. -> " + $f1.text + " and " + $f2.text + "! [Line " + $op.line + "]");
                 has_error = true;
             } 
         }
@@ -447,8 +455,8 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
             {
                 if (!symbol_table.contains($VAR.text)) 
                 {
-                    System.err.println("Error: variable not declared.");
-                    System.exit(1);
+                    System.err.println("# error: '"+ $VAR.text +"' not defined");
+                    //System.exit(1);
                 } else 
                 {
                     $type = 'i';
@@ -463,8 +471,8 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
             {
                 if (!symbol_table.contains($VAR.text)) 
                 {
-                    System.err.println("Error: variable not declared.");
-                    System.exit(1);
+                    System.err.println("# error: '"+ $VAR.text +"' not defined");
+                    //System.exit(1);
                 } 
                 else 
                 {

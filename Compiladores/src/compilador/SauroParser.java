@@ -231,9 +231,6 @@ public class SauroParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 
-			            // Verificar se tem erro aqui
-			            //
-			            //
 			            System.out.println("\n.method public static main([Ljava/lang/String;)V");
 			        
 			setState(31); 
@@ -656,8 +653,8 @@ public class SauroParser extends Parser {
 
 			                if (((St_list_attribContext)_localctx).e1.type != 'i') 
 			                {
-			                    System.err.println("Error: index must be from Integer type.");
-			                    System.exit(1);
+			                    System.err.println("# error: list index must be integer");
+			                    //System.exit(1);
 			                }
 			            
 			setState(87);
@@ -667,6 +664,11 @@ public class SauroParser extends Parser {
 			setState(89);
 			((St_list_attribContext)_localctx).e2 = expression();
 
+			                if (((St_list_attribContext)_localctx).e1.type != 'i') 
+			                {
+			                    System.err.println("# error: list index must be integer");
+			                    //System.exit(1);
+			                }
 			                emit("    invokevirtual List/set(II)V", - 3);
 			            
 			}
@@ -730,13 +732,15 @@ public class SauroParser extends Parser {
 			                    type_table.add('a');
 			                }
 			            }
+			            else 
+			            {
+			                System.err.println("# error: '" + (((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null) + "' is already declared");
+			            }
+
 			            int address = symbol_table.indexOf((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null));
 			            
 			            if (((St_attribContext)_localctx).e.type == 'i')
 			            {
-			                //System.err.println("Erro 1");
-			                //System.err.println((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null));
-			                System.err.println(address);
 			                if(type_table.get(address) == 'i')
 			                {
 			                    emit("    istore " + address + "\n", - 1);
@@ -749,7 +753,6 @@ public class SauroParser extends Parser {
 			            }
 			            else
 			            {
-			                //System.err.println("Erro 2");
 			                if(type_table.get(address) == 'a')
 			                {
 			                    emit("    astore " + address + "\n", - 1);
@@ -854,7 +857,7 @@ public class SauroParser extends Parser {
 			            }
 			            else
 			            {
-			                System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + (((St_ifContext)_localctx).e1!=null?_input.getText(((St_ifContext)_localctx).e1.start,((St_ifContext)_localctx).e1.stop):null) + " e " + (((St_ifContext)_localctx).e2!=null?_input.getText(((St_ifContext)_localctx).e2.start,((St_ifContext)_localctx).e2.stop):null) + "! [Linha " + (((St_ifContext)_localctx).op!=null?((St_ifContext)_localctx).op.getLine():0) + "]");
+			                System.err.println("# error: cannot mix types. -> " + (((St_ifContext)_localctx).e1!=null?_input.getText(((St_ifContext)_localctx).e1.start,((St_ifContext)_localctx).e1.stop):null) + " and " + (((St_ifContext)_localctx).e2!=null?_input.getText(((St_ifContext)_localctx).e2.start,((St_ifContext)_localctx).e2.stop):null) + "! [Line " + (((St_ifContext)_localctx).op!=null?((St_ifContext)_localctx).op.getLine():0) + "]");
 			                has_error = true;
 			            }
 			        
@@ -973,7 +976,7 @@ public class SauroParser extends Parser {
 						}
 						else
 						{
-							System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + (((St_whileContext)_localctx).e1!=null?_input.getText(((St_whileContext)_localctx).e1.start,((St_whileContext)_localctx).e1.stop):null) + " e " + (((St_whileContext)_localctx).e2!=null?_input.getText(((St_whileContext)_localctx).e2.start,((St_whileContext)_localctx).e2.stop):null) + "! [Linha " + (((St_whileContext)_localctx).op!=null?((St_whileContext)_localctx).op.getLine():0) + "]");
+							System.err.println("# error: cannot mix types. -> " + (((St_whileContext)_localctx).e1!=null?_input.getText(((St_whileContext)_localctx).e1.start,((St_whileContext)_localctx).e1.stop):null) + " and " + (((St_whileContext)_localctx).e2!=null?_input.getText(((St_whileContext)_localctx).e2.start,((St_whileContext)_localctx).e2.stop):null) + "! [Line " + (((St_whileContext)_localctx).op!=null?((St_whileContext)_localctx).op.getLine():0) + "]");
 							has_error = true;
 						}
 					
@@ -1089,7 +1092,7 @@ public class SauroParser extends Parser {
 				            }
 				            else
 				            {
-				                System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + (((ExpressionContext)_localctx).t1!=null?_input.getText(((ExpressionContext)_localctx).t1.start,((ExpressionContext)_localctx).t1.stop):null) + " e " + (((ExpressionContext)_localctx).t2!=null?_input.getText(((ExpressionContext)_localctx).t2.start,((ExpressionContext)_localctx).t2.stop):null) + "! [Linha " + (((ExpressionContext)_localctx).op!=null?((ExpressionContext)_localctx).op.getLine():0) + "]");
+				                System.err.println("# error: cannot mix types. -> " + (((ExpressionContext)_localctx).t1!=null?_input.getText(((ExpressionContext)_localctx).t1.start,((ExpressionContext)_localctx).t1.stop):null) + " and " + (((ExpressionContext)_localctx).t2!=null?_input.getText(((ExpressionContext)_localctx).t2.start,((ExpressionContext)_localctx).t2.stop):null) + "! [Line " + (((ExpressionContext)_localctx).op!=null?((ExpressionContext)_localctx).op.getLine():0) + "]");
 				                has_error = true;
 				            }
 				        
@@ -1187,7 +1190,7 @@ public class SauroParser extends Parser {
 				            }
 				            else
 				            {
-				                System.err.println("Não é possível realizar operações entre variáveis de tipos diferentes,  você utilizou " + (((TermContext)_localctx).f1!=null?_input.getText(((TermContext)_localctx).f1.start,((TermContext)_localctx).f1.stop):null) + " e " + (((TermContext)_localctx).f2!=null?_input.getText(((TermContext)_localctx).f2.start,((TermContext)_localctx).f2.stop):null) + "! [Linha " + (((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getLine():0) + "]");
+				                System.err.println("# error: cannot mix types. -> " + (((TermContext)_localctx).f1!=null?_input.getText(((TermContext)_localctx).f1.start,((TermContext)_localctx).f1.stop):null) + " and " + (((TermContext)_localctx).f2!=null?_input.getText(((TermContext)_localctx).f2.start,((TermContext)_localctx).f2.stop):null) + "! [Line " + (((TermContext)_localctx).op!=null?((TermContext)_localctx).op.getLine():0) + "]");
 				                has_error = true;
 				            } 
 				        
@@ -1285,8 +1288,8 @@ public class SauroParser extends Parser {
 
 				                if (!symbol_table.contains((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null))) 
 				                {
-				                    System.err.println("Error: variable not declared.");
-				                    System.exit(1);
+				                    System.err.println("# error: '"+ (((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null) +"' not defined");
+				                    //System.exit(1);
 				                } else 
 				                {
 				                    ((FactorContext)_localctx).type =  'i';
@@ -1312,8 +1315,8 @@ public class SauroParser extends Parser {
 
 				                if (!symbol_table.contains((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null))) 
 				                {
-				                    System.err.println("Error: variable not declared.");
-				                    System.exit(1);
+				                    System.err.println("# error: '"+ (((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null) +"' not defined");
+				                    //System.exit(1);
 				                } 
 				                else 
 				                {
