@@ -22,18 +22,18 @@ public class SauroParser extends Parser {
 		IF=1, WHILE=2, OP_CUR=3, CL_CUR=4, EQ=5, NE=6, GT=7, GE=8, LT=9, LE=10, 
 		PLUS=11, MINUS=12, TIMES=13, OVER=14, REMAINDER=15, OP_PAR=16, CL_PAR=17, 
 		ATTRIB=18, COMMA=19, COLON=20, PRINT=21, READ_INT=22, READ_STR=23, APPEND=24, 
-		LIST=25, OP_BRA=26, CL_BRA=27, DOT=28, LEN=29, STR=30, NUMBER=31, VAR=32, 
-		STRING=33, COMMENT=34, NL=35, SPACE=36, INDENT=37, DEDENT=38;
+		LIST=25, OP_BRA=26, CL_BRA=27, DOT=28, LEN=29, STR=30, DEF=31, NUMBER=32, 
+		VAR=33, STRING=34, COMMENT=35, NL=36, SPACE=37, INDENT=38, DEDENT=39;
 	public static final int
-		RULE_program = 0, RULE_main = 1, RULE_statement = 2, RULE_st_print = 3, 
-		RULE_st_new_list = 4, RULE_st_list_append = 5, RULE_st_list_attrib = 6, 
-		RULE_st_attrib = 7, RULE_st_if = 8, RULE_st_while = 9, RULE_expression = 10, 
-		RULE_term = 11, RULE_factor = 12;
+		RULE_program = 0, RULE_function = 1, RULE_main = 2, RULE_statement = 3, 
+		RULE_st_call = 4, RULE_st_print = 5, RULE_st_new_list = 6, RULE_st_list_append = 7, 
+		RULE_st_list_attrib = 8, RULE_st_attrib = 9, RULE_st_if = 10, RULE_st_while = 11, 
+		RULE_expression = 12, RULE_term = 13, RULE_factor = 14;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"program", "main", "statement", "st_print", "st_new_list", "st_list_append", 
-			"st_list_attrib", "st_attrib", "st_if", "st_while", "expression", "term", 
-			"factor"
+			"program", "function", "main", "statement", "st_call", "st_print", "st_new_list", 
+			"st_list_append", "st_list_attrib", "st_attrib", "st_if", "st_while", 
+			"expression", "term", "factor"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -43,7 +43,7 @@ public class SauroParser extends Parser {
 			null, "'if'", "'while'", "'{'", "'}'", "'=='", "'!='", "'>'", "'>='", 
 			"'<'", "'<='", "'+'", "'-'", "'*'", "'/'", "'%'", "'('", "')'", "'='", 
 			"','", "':'", "'print'", "'read_int'", "'read_str'", "'append'", "'list'", 
-			"'['", "']'", "'.'", "'len'", "'str'"
+			"'['", "']'", "'.'", "'len'", "'str'", "'def'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -52,8 +52,8 @@ public class SauroParser extends Parser {
 			null, "IF", "WHILE", "OP_CUR", "CL_CUR", "EQ", "NE", "GT", "GE", "LT", 
 			"LE", "PLUS", "MINUS", "TIMES", "OVER", "REMAINDER", "OP_PAR", "CL_PAR", 
 			"ATTRIB", "COMMA", "COLON", "PRINT", "READ_INT", "READ_STR", "APPEND", 
-			"LIST", "OP_BRA", "CL_BRA", "DOT", "LEN", "STR", "NUMBER", "VAR", "STRING", 
-			"COMMENT", "NL", "SPACE", "INDENT", "DEDENT"
+			"LIST", "OP_BRA", "CL_BRA", "DOT", "LEN", "STR", "DEF", "NUMBER", "VAR", 
+			"STRING", "COMMENT", "NL", "SPACE", "INDENT", "DEDENT"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -121,6 +121,7 @@ public class SauroParser extends Parser {
 
 	    private static ArrayList<String> symbol_table;
 	    private static ArrayList<Character> type_table;
+	    private static ArrayList<String> func_table;
 
 	    public static void main(String[] args) throws Exception
 	    {
@@ -134,9 +135,10 @@ public class SauroParser extends Parser {
 	        // Tabela de Símbolos
 	        symbol_table = new ArrayList<String>();
 	        type_table = new ArrayList<Character>();
+	        func_table = new ArrayList<String>();
 
-	        symbol_table.add("args");
-	        type_table.add('-');
+	        //symbol_table.add("args");
+	        //type_table.add('-'); //tirei para colocar no main apenas
 	        
 	        parser.program();
 	        System.out.println("; symbols: " + symbol_table);
@@ -157,6 +159,12 @@ public class SauroParser extends Parser {
 		public MainContext main() {
 			return getRuleContext(MainContext.class,0);
 		}
+		public List<FunctionContext> function() {
+			return getRuleContexts(FunctionContext.class);
+		}
+		public FunctionContext function(int i) {
+			return getRuleContext(FunctionContext.class,i);
+		}
 		public ProgramContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -174,6 +182,7 @@ public class SauroParser extends Parser {
 	public final ProgramContext program() throws RecognitionException {
 		ProgramContext _localctx = new ProgramContext(_ctx, getState());
 		enterRule(_localctx, 0, RULE_program);
+		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -187,8 +196,120 @@ public class SauroParser extends Parser {
 			            System.out.println("    return");
 			            System.out.println(".end method");
 			        
-			setState(27);
+			setState(34);
+			_errHandler.sync(this);
+			_la = _input.LA(1);
+			while (_la==DEF) {
+				{
+				{
+				setState(31);
+				function();
+				}
+				}
+				setState(36);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+			}
+			setState(37);
 			main();
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class FunctionContext extends ParserRuleContext {
+		public Token VAR;
+		public TerminalNode DEF() { return getToken(SauroParser.DEF, 0); }
+		public TerminalNode VAR() { return getToken(SauroParser.VAR, 0); }
+		public TerminalNode OP_PAR() { return getToken(SauroParser.OP_PAR, 0); }
+		public TerminalNode CL_PAR() { return getToken(SauroParser.CL_PAR, 0); }
+		public TerminalNode COLON() { return getToken(SauroParser.COLON, 0); }
+		public TerminalNode INDENT() { return getToken(SauroParser.INDENT, 0); }
+		public TerminalNode DEDENT() { return getToken(SauroParser.DEDENT, 0); }
+		public List<StatementContext> statement() {
+			return getRuleContexts(StatementContext.class);
+		}
+		public StatementContext statement(int i) {
+			return getRuleContext(StatementContext.class,i);
+		}
+		public FunctionContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_function; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterFunction(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitFunction(this);
+		}
+	}
+
+	public final FunctionContext function() throws RecognitionException {
+		FunctionContext _localctx = new FunctionContext(_ctx, getState());
+		enterRule(_localctx, 2, RULE_function);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(39);
+			match(DEF);
+			setState(40);
+			((FunctionContext)_localctx).VAR = match(VAR);
+			setState(41);
+			match(OP_PAR);
+			setState(42);
+			match(CL_PAR);
+			setState(43);
+			match(COLON);
+			setState(44);
+			match(INDENT);
+
+			            System.out.println("\n.method public static " + (((FunctionContext)_localctx).VAR!=null?((FunctionContext)_localctx).VAR.getText():null) + "()V");   //.method public static cube()V
+			            if(!func_table.contains((((FunctionContext)_localctx).VAR!=null?((FunctionContext)_localctx).VAR.getText():null)))
+			            {
+			                func_table.add((((FunctionContext)_localctx).VAR!=null?((FunctionContext)_localctx).VAR.getText():null));
+			            }
+			            else
+			            {
+			                System.err.println("Function already exists: " + (((FunctionContext)_localctx).VAR!=null?((FunctionContext)_localctx).VAR.getText():null)); 
+			                has_error = true;
+			            }
+			        
+			setState(47); 
+			_errHandler.sync(this);
+			_la = _input.LA(1);
+			do {
+				{
+				{
+				setState(46);
+				statement();
+				}
+				}
+				setState(49); 
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << IF) | (1L << WHILE) | (1L << PRINT) | (1L << VAR) | (1L << NL))) != 0) );
+			setState(51);
+			match(DEDENT);
+
+			            System.out.println("        return");              
+			            System.out.println(".limit locals " + symbol_table.size());
+			            System.out.println(".limit stack " + stack_max);
+			            System.out.println(".end method");
+			            stack_max = 0;
+			            symbol_table.clear();
+			            type_table.clear(); 				
+			        
 			}
 		}
 		catch (RecognitionException re) {
@@ -225,25 +346,27 @@ public class SauroParser extends Parser {
 
 	public final MainContext main() throws RecognitionException {
 		MainContext _localctx = new MainContext(_ctx, getState());
-		enterRule(_localctx, 2, RULE_main);
+		enterRule(_localctx, 4, RULE_main);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
 
 			            System.out.println("\n.method public static main([Ljava/lang/String;)V");
+			            symbol_table.add("args");
+			            type_table.add('-');
 			        
-			setState(31); 
+			setState(56); 
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			do {
 				{
 				{
-				setState(30);
+				setState(55);
 				statement();
 				}
 				}
-				setState(33); 
+				setState(58); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << IF) | (1L << WHILE) | (1L << PRINT) | (1L << VAR) | (1L << NL))) != 0) );
@@ -279,6 +402,9 @@ public class SauroParser extends Parser {
 		public St_whileContext st_while() {
 			return getRuleContext(St_whileContext.class,0);
 		}
+		public St_callContext st_call() {
+			return getRuleContext(St_callContext.class,0);
+		}
 		public St_new_listContext st_new_list() {
 			return getRuleContext(St_new_listContext.class,0);
 		}
@@ -305,67 +431,121 @@ public class SauroParser extends Parser {
 
 	public final StatementContext statement() throws RecognitionException {
 		StatementContext _localctx = new StatementContext(_ctx, getState());
-		enterRule(_localctx, 4, RULE_statement);
+		enterRule(_localctx, 6, RULE_statement);
 		try {
-			setState(45);
+			setState(71);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,1,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(37);
+				setState(62);
 				st_print();
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(38);
+				setState(63);
 				st_attrib();
 				}
 				break;
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(39);
+				setState(64);
 				st_if();
 				}
 				break;
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(40);
+				setState(65);
 				st_while();
 				}
 				break;
 			case 5:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(41);
-				st_new_list();
+				setState(66);
+				st_call();
 				}
 				break;
 			case 6:
 				enterOuterAlt(_localctx, 6);
 				{
-				setState(42);
-				st_list_append();
+				setState(67);
+				st_new_list();
 				}
 				break;
 			case 7:
 				enterOuterAlt(_localctx, 7);
 				{
-				setState(43);
-				st_list_attrib();
+				setState(68);
+				st_list_append();
 				}
 				break;
 			case 8:
 				enterOuterAlt(_localctx, 8);
 				{
-				setState(44);
+				setState(69);
+				st_list_attrib();
+				}
+				break;
+			case 9:
+				enterOuterAlt(_localctx, 9);
+				{
+				setState(70);
 				match(NL);
 				}
 				break;
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class St_callContext extends ParserRuleContext {
+		public Token VAR;
+		public TerminalNode VAR() { return getToken(SauroParser.VAR, 0); }
+		public TerminalNode OP_PAR() { return getToken(SauroParser.OP_PAR, 0); }
+		public TerminalNode CL_PAR() { return getToken(SauroParser.CL_PAR, 0); }
+		public St_callContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_st_call; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof SauroListener ) ((SauroListener)listener).enterSt_call(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof SauroListener ) ((SauroListener)listener).exitSt_call(this);
+		}
+	}
+
+	public final St_callContext st_call() throws RecognitionException {
+		St_callContext _localctx = new St_callContext(_ctx, getState());
+		enterRule(_localctx, 8, RULE_st_call);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(73);
+			((St_callContext)_localctx).VAR = match(VAR);
+			setState(74);
+			match(OP_PAR);
+			setState(75);
+			match(CL_PAR);
+
+			                emit("    invokestatic Test/"+(((St_callContext)_localctx).VAR!=null?((St_callContext)_localctx).VAR.getText():null)+"()V", 0); 
+			            
 			}
 		}
 		catch (RecognitionException re) {
@@ -411,19 +591,19 @@ public class SauroParser extends Parser {
 
 	public final St_printContext st_print() throws RecognitionException {
 		St_printContext _localctx = new St_printContext(_ctx, getState());
-		enterRule(_localctx, 6, RULE_st_print);
+		enterRule(_localctx, 10, RULE_st_print);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(47);
+			setState(78);
 			match(PRINT);
-			setState(48);
+			setState(79);
 			match(OP_PAR);
 			 
 			                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
 			            
-			setState(50);
+			setState(81);
 			((St_printContext)_localctx).e1 = expression();
 
 			                if (((St_printContext)_localctx).e1.type == 'i') 
@@ -435,18 +615,18 @@ public class SauroParser extends Parser {
 			                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 2);
 			                }
 			            
-			setState(59);
+			setState(90);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				setState(52);
+				setState(83);
 				match(COMMA);
 				 
 				                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
 				            
-				setState(54);
+				setState(85);
 				((St_printContext)_localctx).e2 = expression();
 
 				                if (((St_printContext)_localctx).e2.type == 'i') 
@@ -460,11 +640,11 @@ public class SauroParser extends Parser {
 				            
 				}
 				}
-				setState(61);
+				setState(92);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
-			setState(62);
+			setState(93);
 			match(CL_PAR);
 
 			            emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
@@ -506,23 +686,23 @@ public class SauroParser extends Parser {
 
 	public final St_new_listContext st_new_list() throws RecognitionException {
 		St_new_listContext _localctx = new St_new_listContext(_ctx, getState());
-		enterRule(_localctx, 8, RULE_st_new_list);
+		enterRule(_localctx, 12, RULE_st_new_list);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(65);
+			setState(96);
 			((St_new_listContext)_localctx).VAR = match(VAR);
 
 			            symbol_table.add((((St_new_listContext)_localctx).VAR!=null?((St_new_listContext)_localctx).VAR.getText():null));
 			            int address = symbol_table.indexOf((((St_new_listContext)_localctx).VAR!=null?((St_new_listContext)_localctx).VAR.getText():null));
 			        
-			setState(67);
+			setState(98);
 			match(ATTRIB);
-			setState(68);
+			setState(99);
 			match(LIST);
-			setState(69);
+			setState(100);
 			match(OP_PAR);
-			setState(70);
+			setState(101);
 			match(CL_PAR);
 
 			            emit("    new List", + 1);
@@ -570,25 +750,25 @@ public class SauroParser extends Parser {
 
 	public final St_list_appendContext st_list_append() throws RecognitionException {
 		St_list_appendContext _localctx = new St_list_appendContext(_ctx, getState());
-		enterRule(_localctx, 10, RULE_st_list_append);
+		enterRule(_localctx, 14, RULE_st_list_append);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(73);
+			setState(104);
 			((St_list_appendContext)_localctx).VAR = match(VAR);
 
 			            int address = symbol_table.indexOf((((St_list_appendContext)_localctx).VAR!=null?((St_list_appendContext)_localctx).VAR.getText():null));
 			            emit("    aload " + address, + 1);
 			        
-			setState(75);
+			setState(106);
 			match(DOT);
-			setState(76);
+			setState(107);
 			match(APPEND);
-			setState(77);
+			setState(108);
 			match(OP_PAR);
-			setState(78);
+			setState(109);
 			((St_list_appendContext)_localctx).e = expression();
-			setState(79);
+			setState(110);
 			match(CL_PAR);
 
 			            emit("    invokevirtual List/append(I)V", - 2);
@@ -636,19 +816,19 @@ public class SauroParser extends Parser {
 
 	public final St_list_attribContext st_list_attrib() throws RecognitionException {
 		St_list_attribContext _localctx = new St_list_attribContext(_ctx, getState());
-		enterRule(_localctx, 12, RULE_st_list_attrib);
+		enterRule(_localctx, 16, RULE_st_list_attrib);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(82);
+			setState(113);
 			((St_list_attribContext)_localctx).VAR = match(VAR);
 
 			                int address = symbol_table.indexOf((((St_list_attribContext)_localctx).VAR!=null?((St_list_attribContext)_localctx).VAR.getText():null));
 			                emit("    aload " + address + "\n", + 1);
 			            
-			setState(84);
+			setState(115);
 			match(OP_BRA);
-			setState(85);
+			setState(116);
 			((St_list_attribContext)_localctx).e1 = expression();
 
 			                if (((St_list_attribContext)_localctx).e1.type != 'i') 
@@ -657,11 +837,11 @@ public class SauroParser extends Parser {
 			                    //System.exit(1);
 			                }
 			            
-			setState(87);
+			setState(118);
 			match(CL_BRA);
-			setState(88);
+			setState(119);
 			match(ATTRIB);
-			setState(89);
+			setState(120);
 			((St_list_attribContext)_localctx).e2 = expression();
 
 			                if (((St_list_attribContext)_localctx).e1.type != 'i') 
@@ -708,15 +888,15 @@ public class SauroParser extends Parser {
 
 	public final St_attribContext st_attrib() throws RecognitionException {
 		St_attribContext _localctx = new St_attribContext(_ctx, getState());
-		enterRule(_localctx, 14, RULE_st_attrib);
+		enterRule(_localctx, 18, RULE_st_attrib);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(92);
+			setState(123);
 			((St_attribContext)_localctx).VAR = match(VAR);
-			setState(93);
+			setState(124);
 			match(ATTRIB);
-			setState(94);
+			setState(125);
 			((St_attribContext)_localctx).e = expression();
 
 			            if (!symbol_table.contains((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null)))
@@ -819,7 +999,7 @@ public class SauroParser extends Parser {
 
 	public final St_ifContext st_if() throws RecognitionException {
 		St_ifContext _localctx = new St_ifContext(_ctx, getState());
-		enterRule(_localctx, 16, RULE_st_if);
+		enterRule(_localctx, 20, RULE_st_if);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -828,11 +1008,11 @@ public class SauroParser extends Parser {
 			            if_count++;
 			            int if_local = if_count;
 			        
-			setState(98);
+			setState(129);
 			match(IF);
-			setState(99);
+			setState(130);
 			((St_ifContext)_localctx).e1 = expression();
-			setState(100);
+			setState(131);
 			((St_ifContext)_localctx).op = _input.LT(1);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQ) | (1L << NE) | (1L << GT) | (1L << GE) | (1L << LT) | (1L << LE))) != 0)) ) {
@@ -843,7 +1023,7 @@ public class SauroParser extends Parser {
 				_errHandler.reportMatch(this);
 				consume();
 			}
-			setState(101);
+			setState(132);
 			((St_ifContext)_localctx).e2 = expression();
 
 			            if(((St_ifContext)_localctx).e1.type == 'i' && ((St_ifContext)_localctx).e2.type == 'i')
@@ -861,25 +1041,25 @@ public class SauroParser extends Parser {
 			                has_error = true;
 			            }
 			        
-			setState(103);
+			setState(134);
 			match(COLON);
-			setState(104);
+			setState(135);
 			match(INDENT);
-			setState(106); 
+			setState(137); 
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			do {
 				{
 				{
-				setState(105);
+				setState(136);
 				statement();
 				}
 				}
-				setState(108); 
+				setState(139); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << IF) | (1L << WHILE) | (1L << PRINT) | (1L << VAR) | (1L << NL))) != 0) );
-			setState(110);
+			setState(141);
 			match(DEDENT);
 			 System.out.println("NOT_IF_" + if_local + ":"); 
 			}
@@ -937,7 +1117,7 @@ public class SauroParser extends Parser {
 
 	public final St_whileContext st_while() throws RecognitionException {
 		St_whileContext _localctx = new St_whileContext(_ctx, getState());
-		enterRule(_localctx, 18, RULE_st_while);
+		enterRule(_localctx, 22, RULE_st_while);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -947,11 +1127,11 @@ public class SauroParser extends Parser {
 			            int while_local = while_count;
 			            System.out.println("BEGIN_WHILE_" + while_local + ":"); 
 			        
-			setState(114);
+			setState(145);
 			match(WHILE);
-			setState(115);
+			setState(146);
 			((St_whileContext)_localctx).e1 = expression();
-			setState(116);
+			setState(147);
 			((St_whileContext)_localctx).op = _input.LT(1);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQ) | (1L << NE) | (1L << GT) | (1L << GE) | (1L << LT) | (1L << LE))) != 0)) ) {
@@ -962,7 +1142,7 @@ public class SauroParser extends Parser {
 				_errHandler.reportMatch(this);
 				consume();
 			}
-			setState(117);
+			setState(148);
 			((St_whileContext)_localctx).e2 = expression();
 
 						if(((St_whileContext)_localctx).e1.type == 'i' && ((St_whileContext)_localctx).e2.type == 'i')
@@ -980,25 +1160,25 @@ public class SauroParser extends Parser {
 							has_error = true;
 						}
 					
-			setState(119);
+			setState(150);
 			match(COLON);
-			setState(120);
+			setState(151);
 			match(INDENT);
-			setState(122); 
+			setState(153); 
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			do {
 				{
 				{
-				setState(121);
+				setState(152);
 				statement();
 				}
 				}
-				setState(124); 
+				setState(155); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << IF) | (1L << WHILE) | (1L << PRINT) | (1L << VAR) | (1L << NL))) != 0) );
-			setState(126);
+			setState(157);
 			match(DEDENT);
 
 			            emit("    goto BEGIN_WHILE_" + while_local, 1);
@@ -1052,20 +1232,20 @@ public class SauroParser extends Parser {
 
 	public final ExpressionContext expression() throws RecognitionException {
 		ExpressionContext _localctx = new ExpressionContext(_ctx, getState());
-		enterRule(_localctx, 20, RULE_expression);
+		enterRule(_localctx, 24, RULE_expression);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(129);
+			setState(160);
 			((ExpressionContext)_localctx).t1 = term();
-			setState(136);
+			setState(167);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==PLUS || _la==MINUS) {
 				{
 				{
-				setState(130);
+				setState(161);
 				((ExpressionContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !(_la==PLUS || _la==MINUS) ) {
@@ -1076,7 +1256,7 @@ public class SauroParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(131);
+				setState(162);
 				((ExpressionContext)_localctx).t2 = term();
 
 				            if(((ExpressionContext)_localctx).t1.type == 'i' && ((ExpressionContext)_localctx).t2.type == 'i')
@@ -1098,7 +1278,7 @@ public class SauroParser extends Parser {
 				        
 				}
 				}
-				setState(138);
+				setState(169);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -1155,20 +1335,20 @@ public class SauroParser extends Parser {
 
 	public final TermContext term() throws RecognitionException {
 		TermContext _localctx = new TermContext(_ctx, getState());
-		enterRule(_localctx, 22, RULE_term);
+		enterRule(_localctx, 26, RULE_term);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(141);
+			setState(172);
 			((TermContext)_localctx).f1 = factor();
-			setState(148);
+			setState(179);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) {
 				{
 				{
-				setState(142);
+				setState(173);
 				((TermContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << TIMES) | (1L << OVER) | (1L << REMAINDER))) != 0)) ) {
@@ -1179,7 +1359,7 @@ public class SauroParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(143);
+				setState(174);
 				((TermContext)_localctx).f2 = factor();
 
 				            if((((TermContext)_localctx).f1.type == 'i') && (((TermContext)_localctx).f2.type == 'i'))
@@ -1196,7 +1376,7 @@ public class SauroParser extends Parser {
 				        
 				}
 				}
-				setState(150);
+				setState(181);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -1250,15 +1430,15 @@ public class SauroParser extends Parser {
 
 	public final FactorContext factor() throws RecognitionException {
 		FactorContext _localctx = new FactorContext(_ctx, getState());
-		enterRule(_localctx, 24, RULE_factor);
+		enterRule(_localctx, 28, RULE_factor);
 		try {
-			setState(189);
+			setState(220);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,7,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,9,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(153);
+				setState(184);
 				((FactorContext)_localctx).NUMBER = match(NUMBER);
 				 
 				                ((FactorContext)_localctx).type =  'i';
@@ -1269,11 +1449,11 @@ public class SauroParser extends Parser {
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(155);
+				setState(186);
 				match(OP_PAR);
-				setState(156);
+				setState(187);
 				((FactorContext)_localctx).e = expression();
-				setState(157);
+				setState(188);
 				match(CL_PAR);
 
 				                ((FactorContext)_localctx).type =  ((FactorContext)_localctx).e.type;
@@ -1283,7 +1463,7 @@ public class SauroParser extends Parser {
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(160);
+				setState(191);
 				((FactorContext)_localctx).VAR = match(VAR);
 
 				                if (!symbol_table.contains((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null))) 
@@ -1296,11 +1476,11 @@ public class SauroParser extends Parser {
 				                    emit("    aload " + symbol_table.indexOf((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null)), + 1);
 				                }
 				            
-				setState(162);
+				setState(193);
 				match(OP_BRA);
-				setState(163);
+				setState(194);
 				((FactorContext)_localctx).e = expression();
-				setState(164);
+				setState(195);
 				match(CL_BRA);
 
 				                emit("    invokevirtual List/get(I)I", + 1);
@@ -1310,7 +1490,7 @@ public class SauroParser extends Parser {
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(167);
+				setState(198);
 				((FactorContext)_localctx).VAR = match(VAR);
 
 				                if (!symbol_table.contains((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null))) 
@@ -1322,7 +1502,7 @@ public class SauroParser extends Parser {
 				                {
 				                    if (type_table.get(symbol_table.indexOf((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null))) == 'i') 
 				                    {
-				                        emit("iload " + symbol_table.indexOf((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null)), + 1);
+				                        emit("    iload " + symbol_table.indexOf((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null)), + 1);
 				                    } 
 				                    else 
 				                    {
@@ -1337,11 +1517,11 @@ public class SauroParser extends Parser {
 			case 5:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(169);
+				setState(200);
 				match(READ_INT);
-				setState(170);
+				setState(201);
 				match(OP_PAR);
-				setState(171);
+				setState(202);
 				match(CL_PAR);
 
 				                ((FactorContext)_localctx).type =  'i';
@@ -1352,11 +1532,11 @@ public class SauroParser extends Parser {
 			case 6:
 				enterOuterAlt(_localctx, 6);
 				{
-				setState(173);
+				setState(204);
 				match(READ_STR);
-				setState(174);
+				setState(205);
 				match(OP_PAR);
-				setState(175);
+				setState(206);
 				match(CL_PAR);
 
 				                ((FactorContext)_localctx).type =  'a';
@@ -1367,7 +1547,7 @@ public class SauroParser extends Parser {
 			case 7:
 				enterOuterAlt(_localctx, 7);
 				{
-				setState(177);
+				setState(208);
 				((FactorContext)_localctx).STRING = match(STRING);
 
 				                ((FactorContext)_localctx).type =  'a';
@@ -1378,13 +1558,13 @@ public class SauroParser extends Parser {
 			case 8:
 				enterOuterAlt(_localctx, 8);
 				{
-				setState(179);
+				setState(210);
 				match(LEN);
-				setState(180);
+				setState(211);
 				match(OP_PAR);
-				setState(181);
+				setState(212);
 				((FactorContext)_localctx).VAR = match(VAR);
-				setState(182);
+				setState(213);
 				match(CL_PAR);
 
 				                ((FactorContext)_localctx).type =  'i';
@@ -1396,13 +1576,13 @@ public class SauroParser extends Parser {
 			case 9:
 				enterOuterAlt(_localctx, 9);
 				{
-				setState(184);
+				setState(215);
 				match(STR);
-				setState(185);
+				setState(216);
 				match(OP_PAR);
-				setState(186);
+				setState(217);
 				((FactorContext)_localctx).VAR = match(VAR);
-				setState(187);
+				setState(218);
 				match(CL_PAR);
 
 				                ((FactorContext)_localctx).type =  'a';
@@ -1425,63 +1605,75 @@ public class SauroParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3(\u00c2\4\2\t\2\4"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3)\u00e1\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
-		"\13\4\f\t\f\4\r\t\r\4\16\t\16\3\2\3\2\3\2\3\3\3\3\6\3\"\n\3\r\3\16\3#"+
-		"\3\3\3\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4\60\n\4\3\5\3\5\3\5\3\5\3"+
-		"\5\3\5\3\5\3\5\3\5\3\5\7\5<\n\5\f\5\16\5?\13\5\3\5\3\5\3\5\3\6\3\6\3\6"+
-		"\3\6\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\b\3\b\3\b\3"+
-		"\b\3\b\3\b\3\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3\n\3\n"+
-		"\3\n\3\n\3\n\6\nm\n\n\r\n\16\nn\3\n\3\n\3\n\3\13\3\13\3\13\3\13\3\13\3"+
-		"\13\3\13\3\13\3\13\6\13}\n\13\r\13\16\13~\3\13\3\13\3\13\3\f\3\f\3\f\3"+
-		"\f\3\f\7\f\u0089\n\f\f\f\16\f\u008c\13\f\3\f\3\f\3\r\3\r\3\r\3\r\3\r\7"+
-		"\r\u0095\n\r\f\r\16\r\u0098\13\r\3\r\3\r\3\16\3\16\3\16\3\16\3\16\3\16"+
-		"\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16"+
-		"\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16"+
-		"\3\16\3\16\5\16\u00c0\n\16\3\16\2\2\17\2\4\6\b\n\f\16\20\22\24\26\30\32"+
-		"\2\5\3\2\7\f\3\2\r\16\3\2\17\21\2\u00c9\2\34\3\2\2\2\4\37\3\2\2\2\6/\3"+
-		"\2\2\2\b\61\3\2\2\2\nC\3\2\2\2\fK\3\2\2\2\16T\3\2\2\2\20^\3\2\2\2\22c"+
-		"\3\2\2\2\24s\3\2\2\2\26\u0083\3\2\2\2\30\u008f\3\2\2\2\32\u00bf\3\2\2"+
-		"\2\34\35\b\2\1\2\35\36\5\4\3\2\36\3\3\2\2\2\37!\b\3\1\2 \"\5\6\4\2! \3"+
-		"\2\2\2\"#\3\2\2\2#!\3\2\2\2#$\3\2\2\2$%\3\2\2\2%&\b\3\1\2&\5\3\2\2\2\'"+
-		"\60\5\b\5\2(\60\5\20\t\2)\60\5\22\n\2*\60\5\24\13\2+\60\5\n\6\2,\60\5"+
-		"\f\7\2-\60\5\16\b\2.\60\7%\2\2/\'\3\2\2\2/(\3\2\2\2/)\3\2\2\2/*\3\2\2"+
-		"\2/+\3\2\2\2/,\3\2\2\2/-\3\2\2\2/.\3\2\2\2\60\7\3\2\2\2\61\62\7\27\2\2"+
-		"\62\63\7\22\2\2\63\64\b\5\1\2\64\65\5\26\f\2\65=\b\5\1\2\66\67\7\25\2"+
-		"\2\678\b\5\1\289\5\26\f\29:\b\5\1\2:<\3\2\2\2;\66\3\2\2\2<?\3\2\2\2=;"+
-		"\3\2\2\2=>\3\2\2\2>@\3\2\2\2?=\3\2\2\2@A\7\23\2\2AB\b\5\1\2B\t\3\2\2\2"+
-		"CD\7\"\2\2DE\b\6\1\2EF\7\24\2\2FG\7\33\2\2GH\7\22\2\2HI\7\23\2\2IJ\b\6"+
-		"\1\2J\13\3\2\2\2KL\7\"\2\2LM\b\7\1\2MN\7\36\2\2NO\7\32\2\2OP\7\22\2\2"+
-		"PQ\5\26\f\2QR\7\23\2\2RS\b\7\1\2S\r\3\2\2\2TU\7\"\2\2UV\b\b\1\2VW\7\34"+
-		"\2\2WX\5\26\f\2XY\b\b\1\2YZ\7\35\2\2Z[\7\24\2\2[\\\5\26\f\2\\]\b\b\1\2"+
-		"]\17\3\2\2\2^_\7\"\2\2_`\7\24\2\2`a\5\26\f\2ab\b\t\1\2b\21\3\2\2\2cd\b"+
-		"\n\1\2de\7\3\2\2ef\5\26\f\2fg\t\2\2\2gh\5\26\f\2hi\b\n\1\2ij\7\26\2\2"+
-		"jl\7\'\2\2km\5\6\4\2lk\3\2\2\2mn\3\2\2\2nl\3\2\2\2no\3\2\2\2op\3\2\2\2"+
-		"pq\7(\2\2qr\b\n\1\2r\23\3\2\2\2st\b\13\1\2tu\7\4\2\2uv\5\26\f\2vw\t\2"+
-		"\2\2wx\5\26\f\2xy\b\13\1\2yz\7\26\2\2z|\7\'\2\2{}\5\6\4\2|{\3\2\2\2}~"+
-		"\3\2\2\2~|\3\2\2\2~\177\3\2\2\2\177\u0080\3\2\2\2\u0080\u0081\7(\2\2\u0081"+
-		"\u0082\b\13\1\2\u0082\25\3\2\2\2\u0083\u008a\5\30\r\2\u0084\u0085\t\3"+
-		"\2\2\u0085\u0086\5\30\r\2\u0086\u0087\b\f\1\2\u0087\u0089\3\2\2\2\u0088"+
-		"\u0084\3\2\2\2\u0089\u008c\3\2\2\2\u008a\u0088\3\2\2\2\u008a\u008b\3\2"+
-		"\2\2\u008b\u008d\3\2\2\2\u008c\u008a\3\2\2\2\u008d\u008e\b\f\1\2\u008e"+
-		"\27\3\2\2\2\u008f\u0096\5\32\16\2\u0090\u0091\t\4\2\2\u0091\u0092\5\32"+
-		"\16\2\u0092\u0093\b\r\1\2\u0093\u0095\3\2\2\2\u0094\u0090\3\2\2\2\u0095"+
-		"\u0098\3\2\2\2\u0096\u0094\3\2\2\2\u0096\u0097\3\2\2\2\u0097\u0099\3\2"+
-		"\2\2\u0098\u0096\3\2\2\2\u0099\u009a\b\r\1\2\u009a\31\3\2\2\2\u009b\u009c"+
-		"\7!\2\2\u009c\u00c0\b\16\1\2\u009d\u009e\7\22\2\2\u009e\u009f\5\26\f\2"+
-		"\u009f\u00a0\7\23\2\2\u00a0\u00a1\b\16\1\2\u00a1\u00c0\3\2\2\2\u00a2\u00a3"+
-		"\7\"\2\2\u00a3\u00a4\b\16\1\2\u00a4\u00a5\7\34\2\2\u00a5\u00a6\5\26\f"+
-		"\2\u00a6\u00a7\7\35\2\2\u00a7\u00a8\b\16\1\2\u00a8\u00c0\3\2\2\2\u00a9"+
-		"\u00aa\7\"\2\2\u00aa\u00c0\b\16\1\2\u00ab\u00ac\7\30\2\2\u00ac\u00ad\7"+
-		"\22\2\2\u00ad\u00ae\7\23\2\2\u00ae\u00c0\b\16\1\2\u00af\u00b0\7\31\2\2"+
-		"\u00b0\u00b1\7\22\2\2\u00b1\u00b2\7\23\2\2\u00b2\u00c0\b\16\1\2\u00b3"+
-		"\u00b4\7#\2\2\u00b4\u00c0\b\16\1\2\u00b5\u00b6\7\37\2\2\u00b6\u00b7\7"+
-		"\22\2\2\u00b7\u00b8\7\"\2\2\u00b8\u00b9\7\23\2\2\u00b9\u00c0\b\16\1\2"+
-		"\u00ba\u00bb\7 \2\2\u00bb\u00bc\7\22\2\2\u00bc\u00bd\7\"\2\2\u00bd\u00be"+
-		"\7\23\2\2\u00be\u00c0\b\16\1\2\u00bf\u009b\3\2\2\2\u00bf\u009d\3\2\2\2"+
-		"\u00bf\u00a2\3\2\2\2\u00bf\u00a9\3\2\2\2\u00bf\u00ab\3\2\2\2\u00bf\u00af"+
-		"\3\2\2\2\u00bf\u00b3\3\2\2\2\u00bf\u00b5\3\2\2\2\u00bf\u00ba\3\2\2\2\u00c0"+
-		"\33\3\2\2\2\n#/=n~\u008a\u0096\u00bf";
+		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\3\2\3\2\7\2#\n\2\f\2"+
+		"\16\2&\13\2\3\2\3\2\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\6\3\62\n\3\r\3\16"+
+		"\3\63\3\3\3\3\3\3\3\4\3\4\6\4;\n\4\r\4\16\4<\3\4\3\4\3\5\3\5\3\5\3\5\3"+
+		"\5\3\5\3\5\3\5\3\5\5\5J\n\5\3\6\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7\3\7\3"+
+		"\7\3\7\3\7\3\7\3\7\7\7[\n\7\f\7\16\7^\13\7\3\7\3\7\3\7\3\b\3\b\3\b\3\b"+
+		"\3\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3"+
+		"\n\3\n\3\n\3\n\3\n\3\n\3\13\3\13\3\13\3\13\3\13\3\f\3\f\3\f\3\f\3\f\3"+
+		"\f\3\f\3\f\3\f\6\f\u008c\n\f\r\f\16\f\u008d\3\f\3\f\3\f\3\r\3\r\3\r\3"+
+		"\r\3\r\3\r\3\r\3\r\3\r\6\r\u009c\n\r\r\r\16\r\u009d\3\r\3\r\3\r\3\16\3"+
+		"\16\3\16\3\16\3\16\7\16\u00a8\n\16\f\16\16\16\u00ab\13\16\3\16\3\16\3"+
+		"\17\3\17\3\17\3\17\3\17\7\17\u00b4\n\17\f\17\16\17\u00b7\13\17\3\17\3"+
+		"\17\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3"+
+		"\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3"+
+		"\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\5\20\u00df\n\20\3\20\2\2\21"+
+		"\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36\2\5\3\2\7\f\3\2\r\16\3\2\17\21"+
+		"\2\u00e9\2 \3\2\2\2\4)\3\2\2\2\68\3\2\2\2\bI\3\2\2\2\nK\3\2\2\2\fP\3\2"+
+		"\2\2\16b\3\2\2\2\20j\3\2\2\2\22s\3\2\2\2\24}\3\2\2\2\26\u0082\3\2\2\2"+
+		"\30\u0092\3\2\2\2\32\u00a2\3\2\2\2\34\u00ae\3\2\2\2\36\u00de\3\2\2\2 "+
+		"$\b\2\1\2!#\5\4\3\2\"!\3\2\2\2#&\3\2\2\2$\"\3\2\2\2$%\3\2\2\2%\'\3\2\2"+
+		"\2&$\3\2\2\2\'(\5\6\4\2(\3\3\2\2\2)*\7!\2\2*+\7#\2\2+,\7\22\2\2,-\7\23"+
+		"\2\2-.\7\26\2\2./\7(\2\2/\61\b\3\1\2\60\62\5\b\5\2\61\60\3\2\2\2\62\63"+
+		"\3\2\2\2\63\61\3\2\2\2\63\64\3\2\2\2\64\65\3\2\2\2\65\66\7)\2\2\66\67"+
+		"\b\3\1\2\67\5\3\2\2\28:\b\4\1\29;\5\b\5\2:9\3\2\2\2;<\3\2\2\2<:\3\2\2"+
+		"\2<=\3\2\2\2=>\3\2\2\2>?\b\4\1\2?\7\3\2\2\2@J\5\f\7\2AJ\5\24\13\2BJ\5"+
+		"\26\f\2CJ\5\30\r\2DJ\5\n\6\2EJ\5\16\b\2FJ\5\20\t\2GJ\5\22\n\2HJ\7&\2\2"+
+		"I@\3\2\2\2IA\3\2\2\2IB\3\2\2\2IC\3\2\2\2ID\3\2\2\2IE\3\2\2\2IF\3\2\2\2"+
+		"IG\3\2\2\2IH\3\2\2\2J\t\3\2\2\2KL\7#\2\2LM\7\22\2\2MN\7\23\2\2NO\b\6\1"+
+		"\2O\13\3\2\2\2PQ\7\27\2\2QR\7\22\2\2RS\b\7\1\2ST\5\32\16\2T\\\b\7\1\2"+
+		"UV\7\25\2\2VW\b\7\1\2WX\5\32\16\2XY\b\7\1\2Y[\3\2\2\2ZU\3\2\2\2[^\3\2"+
+		"\2\2\\Z\3\2\2\2\\]\3\2\2\2]_\3\2\2\2^\\\3\2\2\2_`\7\23\2\2`a\b\7\1\2a"+
+		"\r\3\2\2\2bc\7#\2\2cd\b\b\1\2de\7\24\2\2ef\7\33\2\2fg\7\22\2\2gh\7\23"+
+		"\2\2hi\b\b\1\2i\17\3\2\2\2jk\7#\2\2kl\b\t\1\2lm\7\36\2\2mn\7\32\2\2no"+
+		"\7\22\2\2op\5\32\16\2pq\7\23\2\2qr\b\t\1\2r\21\3\2\2\2st\7#\2\2tu\b\n"+
+		"\1\2uv\7\34\2\2vw\5\32\16\2wx\b\n\1\2xy\7\35\2\2yz\7\24\2\2z{\5\32\16"+
+		"\2{|\b\n\1\2|\23\3\2\2\2}~\7#\2\2~\177\7\24\2\2\177\u0080\5\32\16\2\u0080"+
+		"\u0081\b\13\1\2\u0081\25\3\2\2\2\u0082\u0083\b\f\1\2\u0083\u0084\7\3\2"+
+		"\2\u0084\u0085\5\32\16\2\u0085\u0086\t\2\2\2\u0086\u0087\5\32\16\2\u0087"+
+		"\u0088\b\f\1\2\u0088\u0089\7\26\2\2\u0089\u008b\7(\2\2\u008a\u008c\5\b"+
+		"\5\2\u008b\u008a\3\2\2\2\u008c\u008d\3\2\2\2\u008d\u008b\3\2\2\2\u008d"+
+		"\u008e\3\2\2\2\u008e\u008f\3\2\2\2\u008f\u0090\7)\2\2\u0090\u0091\b\f"+
+		"\1\2\u0091\27\3\2\2\2\u0092\u0093\b\r\1\2\u0093\u0094\7\4\2\2\u0094\u0095"+
+		"\5\32\16\2\u0095\u0096\t\2\2\2\u0096\u0097\5\32\16\2\u0097\u0098\b\r\1"+
+		"\2\u0098\u0099\7\26\2\2\u0099\u009b\7(\2\2\u009a\u009c\5\b\5\2\u009b\u009a"+
+		"\3\2\2\2\u009c\u009d\3\2\2\2\u009d\u009b\3\2\2\2\u009d\u009e\3\2\2\2\u009e"+
+		"\u009f\3\2\2\2\u009f\u00a0\7)\2\2\u00a0\u00a1\b\r\1\2\u00a1\31\3\2\2\2"+
+		"\u00a2\u00a9\5\34\17\2\u00a3\u00a4\t\3\2\2\u00a4\u00a5\5\34\17\2\u00a5"+
+		"\u00a6\b\16\1\2\u00a6\u00a8\3\2\2\2\u00a7\u00a3\3\2\2\2\u00a8\u00ab\3"+
+		"\2\2\2\u00a9\u00a7\3\2\2\2\u00a9\u00aa\3\2\2\2\u00aa\u00ac\3\2\2\2\u00ab"+
+		"\u00a9\3\2\2\2\u00ac\u00ad\b\16\1\2\u00ad\33\3\2\2\2\u00ae\u00b5\5\36"+
+		"\20\2\u00af\u00b0\t\4\2\2\u00b0\u00b1\5\36\20\2\u00b1\u00b2\b\17\1\2\u00b2"+
+		"\u00b4\3\2\2\2\u00b3\u00af\3\2\2\2\u00b4\u00b7\3\2\2\2\u00b5\u00b3\3\2"+
+		"\2\2\u00b5\u00b6\3\2\2\2\u00b6\u00b8\3\2\2\2\u00b7\u00b5\3\2\2\2\u00b8"+
+		"\u00b9\b\17\1\2\u00b9\35\3\2\2\2\u00ba\u00bb\7\"\2\2\u00bb\u00df\b\20"+
+		"\1\2\u00bc\u00bd\7\22\2\2\u00bd\u00be\5\32\16\2\u00be\u00bf\7\23\2\2\u00bf"+
+		"\u00c0\b\20\1\2\u00c0\u00df\3\2\2\2\u00c1\u00c2\7#\2\2\u00c2\u00c3\b\20"+
+		"\1\2\u00c3\u00c4\7\34\2\2\u00c4\u00c5\5\32\16\2\u00c5\u00c6\7\35\2\2\u00c6"+
+		"\u00c7\b\20\1\2\u00c7\u00df\3\2\2\2\u00c8\u00c9\7#\2\2\u00c9\u00df\b\20"+
+		"\1\2\u00ca\u00cb\7\30\2\2\u00cb\u00cc\7\22\2\2\u00cc\u00cd\7\23\2\2\u00cd"+
+		"\u00df\b\20\1\2\u00ce\u00cf\7\31\2\2\u00cf\u00d0\7\22\2\2\u00d0\u00d1"+
+		"\7\23\2\2\u00d1\u00df\b\20\1\2\u00d2\u00d3\7$\2\2\u00d3\u00df\b\20\1\2"+
+		"\u00d4\u00d5\7\37\2\2\u00d5\u00d6\7\22\2\2\u00d6\u00d7\7#\2\2\u00d7\u00d8"+
+		"\7\23\2\2\u00d8\u00df\b\20\1\2\u00d9\u00da\7 \2\2\u00da\u00db\7\22\2\2"+
+		"\u00db\u00dc\7#\2\2\u00dc\u00dd\7\23\2\2\u00dd\u00df\b\20\1\2\u00de\u00ba"+
+		"\3\2\2\2\u00de\u00bc\3\2\2\2\u00de\u00c1\3\2\2\2\u00de\u00c8\3\2\2\2\u00de"+
+		"\u00ca\3\2\2\2\u00de\u00ce\3\2\2\2\u00de\u00d2\3\2\2\2\u00de\u00d4\3\2"+
+		"\2\2\u00de\u00d9\3\2\2\2\u00df\37\3\2\2\2\f$\63<I\\\u008d\u009d\u00a9"+
+		"\u00b5\u00de";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

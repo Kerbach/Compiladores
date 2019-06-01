@@ -20,6 +20,16 @@ public interface SauroListener extends ParseTreeListener {
 	 */
 	void exitProgram(SauroParser.ProgramContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SauroParser#function}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunction(SauroParser.FunctionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#function}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunction(SauroParser.FunctionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SauroParser#main}.
 	 * @param ctx the parse tree
 	 */
@@ -39,6 +49,16 @@ public interface SauroListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitStatement(SauroParser.StatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SauroParser#st_call}.
+	 * @param ctx the parse tree
+	 */
+	void enterSt_call(SauroParser.St_callContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#st_call}.
+	 * @param ctx the parse tree
+	 */
+	void exitSt_call(SauroParser.St_callContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SauroParser#st_print}.
 	 * @param ctx the parse tree

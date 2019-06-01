@@ -60,6 +60,7 @@ COMANDOS TERMINAL
 
     private static ArrayList<String> symbol_table;
     private static ArrayList<Character> type_table;
+    private static ArrayList<String> func_table;
 
     public static void main(String[] args) throws Exception
     {
@@ -73,9 +74,10 @@ COMANDOS TERMINAL
         // Tabela de Símbolos
         symbol_table = new ArrayList<String>();
         type_table = new ArrayList<Character>();
+        func_table = new ArrayList<String>();
 
-        symbol_table.add("args");
-        type_table.add('-');
+        //symbol_table.add("args");
+        //type_table.add('-'); //tirei para colocar no main apenas
         
         parser.program();
         System.out.println("; symbols: " + symbol_table);
@@ -126,6 +128,8 @@ DOT         : '.' ;
 LEN         : 'len' ;
 STR         : 'str' ;
 
+DEF         : 'def' ;
+
 NUMBER      : '0'..'9'+ ;
 VAR         : 'a'..'z'+ ;
 STRING      : '"' ~["]* '"' ;
@@ -133,6 +137,7 @@ STRING      : '"' ~["]* '"' ;
 COMMENT     : '#' ~[\r\n]* { skip();} ;
 NL: ('\r'? '\n' ' '*) ;
 SPACE       : (' '|'\t')+ { skip(); } ;
+
 
 /*---------------- PARSER RULES ----------------*/
 
@@ -148,12 +153,41 @@ program
             System.out.println("    return");
             System.out.println(".end method");
         }
-       main
+       (function)*  main
+    ;
+
+function 
+    :
+	DEF VAR OP_PAR CL_PAR COLON INDENT
+        {
+            System.out.println("\n.method public static " + $VAR.text + "()V");   //.method public static cube()V
+            if(!func_table.contains($VAR.text))
+            {
+                func_table.add($VAR.text);
+            }
+            else
+            {
+                System.err.println("Function already exists: " + $VAR.text); 
+                has_error = true;
+            }
+        }
+    (statement)+ DEDENT
+        {
+            System.out.println("        return");              
+            System.out.println(".limit locals " + symbol_table.size());
+            System.out.println(".limit stack " + stack_max);
+            System.out.println(".end method");
+            stack_max = 0;
+            symbol_table.clear();
+            type_table.clear(); 				
+        }
     ;
 
 main
     :   {
             System.out.println("\n.method public static main([Ljava/lang/String;)V");
+            symbol_table.add("args");
+            type_table.add('-');
         }
         (statement)+
         {
@@ -165,7 +199,15 @@ main
     ;
 
 statement
-    : st_print | st_attrib | st_if | st_while| st_new_list | st_list_append | st_list_attrib | NL
+    : st_print | st_attrib | st_if | st_while | st_call | st_new_list | st_list_append | st_list_attrib | NL
+    ;
+
+st_call
+    :
+        VAR OP_PAR CL_PAR // variable ()
+            {
+                emit("    invokestatic Test/"+$VAR.text+"()V", 0); 
+            } 
     ;
 
 st_print
@@ -478,7 +520,7 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
                 {
                     if (type_table.get(symbol_table.indexOf($VAR.text)) == 'i') 
                     {
-                        emit("iload " + symbol_table.indexOf($VAR.text), + 1);
+                        emit("    iload " + symbol_table.indexOf($VAR.text), + 1);
                     } 
                     else 
                     {
