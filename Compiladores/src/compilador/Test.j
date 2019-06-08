@@ -8,18 +8,20 @@
     return
 .end method
 
-.method public static square(II)V
+.method public static greater(II)I
         iload 0
-        iload 1
-        imul
         istore 2
 
-    
-        getstatic java/lang/System/out Ljava/io/PrintStream;
+        iload 1
         iload 2
-        invokevirtual java/io/PrintStream/println(I)V
-        getstatic java/lang/System/out Ljava/io/PrintStream;
-        invokevirtual java/io/PrintStream/println()V
+    
+if_icmple NOT_IF_1
+        iload 1
+        istore 2
+
+NOT_IF_1:
+        iload 2
+    ireturn
         return
 .limit locals 3
 .limit stack 2
@@ -27,10 +29,18 @@
 
 .method public static main([Ljava/lang/String;)V
         ldc 8
-        ldc 2
-        invokestatic Test/square(II)V
+        istore 1
+
+    
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        ldc 4
+        iload 1
+        invokestatic Test/greater(II)I
+        invokevirtual java/io/PrintStream/println(I)V
+        getstatic java/lang/System/out Ljava/io/PrintStream;
+        invokevirtual java/io/PrintStream/println()V
         return
-.limit locals 1
-.limit stack 2
+.limit locals 2
+.limit stack 3
 .end method
-; symbols: [args]
+; symbols: [args, x]

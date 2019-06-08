@@ -1,5 +1,8 @@
-def square(n,x):
-    a = n * x
-    print(a)
+def greater(a, b) int:
+    c = a
+    if b > c:
+        c = b
+    return c
 
-square(8,2)
+x = 8
+print(greater(4, x))

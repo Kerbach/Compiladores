@@ -170,6 +170,16 @@ public interface SauroListener extends ParseTreeListener {
 	 */
 	void exitTerm(SauroParser.TermContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SauroParser#st_return}.
+	 * @param ctx the parse tree
+	 */
+	void enterSt_return(SauroParser.St_returnContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#st_return}.
+	 * @param ctx the parse tree
+	 */
+	void exitSt_return(SauroParser.St_returnContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SauroParser#factor}.
 	 * @param ctx the parse tree
 	 */

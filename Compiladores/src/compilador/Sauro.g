@@ -47,6 +47,8 @@ COMANDOS TERMINAL
     private static int while_count = 0;
 	private static int num_args = 0;
 	private static int num_param = 0;
+	private static boolean function_return, function_return_expected;
+	private static String r = "";
     
     private static boolean has_error = false;
 
@@ -121,6 +123,7 @@ COLON       : ':' ;
 PRINT       : 'print' ;
 READ_INT    : 'read_int' ;
 READ_STR    : 'read_str' ;
+RETURN      : 'return' ;
 
 APPEND      : 'append' ;
 LIST        : 'list' ;
@@ -129,6 +132,7 @@ CL_BRA      : ']' ;
 DOT         : '.' ;
 LEN         : 'len' ;
 STR         : 'str' ;
+INT         : 'int' ;
 
 DEF         : 'def' ;
 
@@ -160,7 +164,17 @@ program
 
 function 
     :
-	DEF VAR OP_PAR ( parameters ) ? CL_PAR COLON INDENT
+		{
+			r = "V"; 
+			function_return = false; 
+		}
+	DEF VAR OP_PAR ( parameters ) ? CL_PAR (INT  
+		{ 
+			r = "I"; 
+			function_return = true; 
+			function_return_expected = true; 
+		} 
+	)? COLON INDENT
         {
 			String qt_param = "";
 			for (int i = 0; i < num_param; i++)
@@ -168,7 +182,7 @@ function
 				qt_param = qt_param + "I";
 			}
 			
-            System.out.println("\n.method public static " + $VAR.text + "(" + qt_param + ")V");   //.method public static cube()V
+            System.out.println("\n.method public static " + $VAR.text + "(" + qt_param + ")"+ r);   //.method public static cube()V
 			num_param = 0;
 			
             if(!func_table.contains($VAR.text))
@@ -255,7 +269,7 @@ main
     ;
 
 statement
-    : st_print | st_attrib | st_if | st_while | st_call | st_new_list | st_list_append | st_list_attrib | NL
+    : st_print | st_attrib | st_if | st_while | st_call | st_new_list | st_list_append | st_list_attrib | st_return | NL
     ;
 
 st_call
@@ -273,10 +287,8 @@ st_call
 					qt_argumentos = qt_argumentos + "I";
 				}
 				num_args = 0;
-				//emit("    invokestatic Test/" + $VAR.text + "("+qt_argumentos+")V", 0);
 				emit("    invokestatic Test/" + $VAR.text + "("+qt_argumentos+")V", 0);
-					
-            } 
+            }
     ;
 
 st_print
@@ -450,20 +462,6 @@ st_if
         { System.out.println("NOT_IF_" + if_local + ":"); }
     ;
 
-/*
-comparison
-    :   expression op = ( EQ | NE | GT | GE | LT | LE) expression
-        {
-            if ($op.type == EQ) { emit("\nif_icmpne NOT_IF_" + if_count, -2); }
-            else if ($op.type == NE) { emit("\nif_icmpeq NOT_IF_" + if_count, -2); }
-            else if ($op.type == GT) { emit("\nif_icmple NOT_IF_" + if_count, -2); }
-            else if ($op.type == GE) { emit("\nif_icmplt NOT_IF_" + if_count, -2); }
-            else if ($op.type == LT) { emit("\nif_icmpge NOT_IF_" + if_count, -2); }
-            else if ($op.type == LE) { emit("\nif_icmpgt NOT_IF_" + if_count, -2); }
-        }
-    ;
- */
-
 st_while
     :   {
             while_count++;
@@ -494,20 +492,6 @@ st_while
             System.out.println("END_WHILE_" + while_local + ":");
         }
     ;
-
-/*
-comparison_while
-    :   expression op = ( EQ | NE | GT | GE | LT | LE) expression
-        {
-                 if ($op.type == EQ) { emit("\nif_icmpne END_WHILE_" + while_count, -2); }
-            else if ($op.type == NE) { emit("\nif_icmpeq END_WHILE_" + while_count, -2); }
-            else if ($op.type == GT) { emit("\nif_icmple END_WHILE_" + while_count, -2); }
-            else if ($op.type == GE) { emit("\nif_icmplt END_WHILE_" + while_count, -2); }
-            else if ($op.type == LT) { emit("\nif_icmpge END_WHILE_" + while_count, -2); }
-            else if ($op.type == LE) { emit("\nif_icmpgt END_WHILE_" + while_count, -2); }
-        }
-    ;
- */
 
 expression returns [char type]
     :   t1 = term ( op = ( PLUS | MINUS ) t2 = term 
@@ -552,6 +536,28 @@ term returns [char type]
          {$type = $f1.type;}
     ;
 
+st_return
+	:
+	RETURN e = expression
+		{
+			if(function_return == false)
+            {
+                System.err.println("Integer return not expected"); 
+                has_error = true;
+            }    
+            if($e.type == 'a')
+			{
+                System.err.println("Waited an integer on return"); 
+                has_error = true;
+            }
+            else
+			{
+                function_return_expected = false;
+                emit("ireturn", - 1);
+            } 
+		}
+	;
+	
 factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |   VAR |   READ_INT OP_PAR CL_PAR
     :   NUMBER
             { 
@@ -599,6 +605,22 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
                     $type = type_table.get(symbol_table.indexOf($VAR.text));
                 }
             }
+	|	VAR OP_PAR (arguments) ? CL_PAR
+			{
+				$type = 'i';
+				if(!func_table.contains($VAR.text))
+				{
+					System.err.println("Function do not exists: " + $VAR.text); 
+					has_error = true;
+				}
+				String qt_argumentos = "";
+				for (int i = 0; i < num_args; i++)
+				{ 
+					qt_argumentos = qt_argumentos + "I";
+				}
+				num_args = 0;
+				emit("    invokestatic Test/" + $VAR.text + "("+qt_argumentos+")I", 0);
+			}
     |   READ_INT OP_PAR CL_PAR
             {
                 $type = 'i';
