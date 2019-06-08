@@ -45,6 +45,8 @@ COMANDOS TERMINAL
     private static int stack_cur, stack_max, if_counter;
     private static int if_count = 0;
     private static int while_count = 0;
+	private static int num_args = 0;
+	private static int num_param = 0;
     
     private static boolean has_error = false;
 
@@ -158,9 +160,17 @@ program
 
 function 
     :
-	DEF VAR OP_PAR CL_PAR COLON INDENT
+	DEF VAR OP_PAR ( parameters ) ? CL_PAR COLON INDENT
         {
-            System.out.println("\n.method public static " + $VAR.text + "()V");   //.method public static cube()V
+			String qt_param = "";
+			for (int i = 0; i < num_param; i++)
+			{ 
+				qt_param = qt_param + "I";
+			}
+			
+            System.out.println("\n.method public static " + $VAR.text + "(" + qt_param + ")V");   //.method public static cube()V
+			num_param = 0;
+			
             if(!func_table.contains($VAR.text))
             {
                 func_table.add($VAR.text);
@@ -181,6 +191,52 @@ function
             symbol_table.clear();
             type_table.clear(); 				
         }
+    ;
+
+parameters
+	: 
+    VAR 
+        {
+            if(!symbol_table.contains($VAR.text))
+            {
+				num_param = 1;
+                symbol_table.add($VAR.text);
+                type_table.add('i');
+            }
+        }
+    ( COMMA VAR 
+        {
+            if (!symbol_table.contains($VAR.text))
+            {
+				num_param++;
+                symbol_table.add($VAR.text);
+                type_table.add('i');
+            }
+        }
+    )*
+	;
+
+arguments
+    : 
+    (e1 = expression) 
+		{ 
+			num_args = 1;
+			if($e1.type == 'a')
+			{
+                System.err.println("Apenas Inteiros."); 
+                has_error = true;
+			}
+        } 
+	(COMMA e2 = expression 
+		{ 	
+			num_args++;
+            if($e2.type == 'a')
+			{
+                System.err.println("Apenas Inteiros."); 
+                has_error = true;
+			}		
+        } 
+	)*
     ;
 
 main
@@ -204,9 +260,22 @@ statement
 
 st_call
     :
-        VAR OP_PAR CL_PAR // variable ()
+        VAR OP_PAR ( arguments ) ? CL_PAR // variable (n,b)
             {
-                emit("    invokestatic Test/"+$VAR.text+"()V", 0); 
+				if(!func_table.contains($VAR.text))
+				{
+					System.err.println("Function do not exists: " + $VAR.text); 
+					has_error = true;
+				}
+				String qt_argumentos = "";
+				for (int i = 0; i < num_args; i++)
+				{ 
+					qt_argumentos = qt_argumentos + "I";
+				}
+				num_args = 0;
+				//emit("    invokestatic Test/" + $VAR.text + "("+qt_argumentos+")V", 0);
+				emit("    invokestatic Test/" + $VAR.text + "("+qt_argumentos+")V", 0);
+					
             } 
     ;
 

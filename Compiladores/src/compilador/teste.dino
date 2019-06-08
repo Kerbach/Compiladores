@@ -1,7 +1,5 @@
-def cube():
-    n = 4
-    print(n * n * n)
+def square(n,x):
+    a = n * x
+    print(a)
 
-n = 1
-cube()
-print(n)
+square(8,2)
