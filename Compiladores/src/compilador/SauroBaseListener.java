@@ -90,13 +90,13 @@ public class SauroBaseListener implements SauroListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSt_call(SauroParser.St_callContext ctx) { }
+	@Override public void enterSt_return(SauroParser.St_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitSt_call(SauroParser.St_callContext ctx) { }
+	@Override public void exitSt_return(SauroParser.St_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -109,6 +109,30 @@ public class SauroBaseListener implements SauroListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSt_print(SauroParser.St_printContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSt_attrib(SauroParser.St_attribContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSt_attrib(SauroParser.St_attribContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSt_call(SauroParser.St_callContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSt_call(SauroParser.St_callContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -145,18 +169,6 @@ public class SauroBaseListener implements SauroListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSt_list_attrib(SauroParser.St_list_attribContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterSt_attrib(SauroParser.St_attribContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSt_attrib(SauroParser.St_attribContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -205,18 +217,6 @@ public class SauroBaseListener implements SauroListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTerm(SauroParser.TermContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterSt_return(SauroParser.St_returnContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSt_return(SauroParser.St_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -1,8 +1,10 @@
-def greater(a, b) int:
-    c = a
-    if b > c:
-        c = b
-    return c
+# errors for simple functions
 
-x = 8
-print(greater(4, x))
+def test():
+    x = 1
+
+def test(): # error: procedure 'test' is already declared
+    y = 1
+
+test()
+sort() # error: procedure 'sort' is not declared

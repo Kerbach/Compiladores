@@ -191,7 +191,7 @@ function
             }
             else
             {
-                System.err.println("Function already exists: " + $VAR.text); 
+                System.err.println("Error: function " + $VAR.text + " already exists.");
                 has_error = true;
             }
         }
@@ -235,18 +235,18 @@ arguments
     (e1 = expression) 
 		{ 
 			num_args = 1;
-			if($e1.type == 'a')
+			if($e1.type != 'i')
 			{
-                System.err.println("Apenas Inteiros."); 
+                System.err.println("Error: only Integer values allowed.");
                 has_error = true;
 			}
         } 
 	(COMMA e2 = expression 
 		{ 	
 			num_args++;
-            if($e2.type == 'a')
+            if($e2.type != 'i')
 			{
-                System.err.println("Apenas Inteiros."); 
+                System.err.println("Error: only Integer values allowed.");
                 has_error = true;
 			}		
         } 
@@ -272,13 +272,112 @@ statement
     : st_print | st_attrib | st_if | st_while | st_call | st_new_list | st_list_append | st_list_attrib | st_return | NL
     ;
 
+st_return
+	:
+	RETURN e = expression
+		{
+			if(function_return == false)
+            {
+                System.err.println("Error: return not expected.");
+                has_error = true;
+            }    
+            if($e.type != 'i')
+			{
+                System.err.println("Error: expected Integer on return.");
+                has_error = true;
+            }
+            else
+			{
+                function_return_expected = false;
+                emit("ireturn", - 1);
+            } 
+		}
+	;
+	
+st_print
+    :   PRINT OP_PAR
+            { 
+                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
+            }
+            e1 = expression
+            {
+                if ($e1.type == 'l') 
+				{
+					System.err.println("Error: cannot print List directly.");
+					has_error = true;
+				}
+				if ($e1.type == 'i') 
+				{
+					emit("invokevirtual java/io/PrintStream/print(I)V", - 2);
+				} 
+				else 
+				{
+					emit("invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 2);
+				}
+            }
+        (COMMA
+            { 
+                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
+            }
+        e2 = expression
+            {
+                if ($e2.type == 'l') 
+				{
+					System.err.println("Error: cannot print List directly.");
+					has_error = true;
+				}
+				if ($e2.type == 'i') 
+				{
+					emit("invokevirtual java/io/PrintStream/print(I)V", - 2);
+				} 
+				else 
+				{
+					emit("invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 2);
+				}
+            }
+        )* CL_PAR
+        {
+            emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
+            emit("    invokevirtual java/io/PrintStream/println()V", - 1);
+        }
+    ;
+	
+st_attrib
+    :   
+        VAR ATTRIB e = expression
+        {
+            if (!symbol_table.contains($VAR.text)) 
+			{
+                symbol_table.add($VAR.text);
+                type_table.add($e.type);
+            } 
+			else 
+			{
+                if (type_table.get(symbol_table.indexOf($VAR.text)) != $e.type) 
+				{
+                   System.err.println("Error: impossible to change variable type.");
+                   has_error = true;
+                }
+            }
+
+            if ($e.type == 'i') 
+			{
+                emit("istore " + symbol_table.indexOf($VAR.text), - 1);
+            } 
+			else 
+			{
+                emit("astore " + symbol_table.indexOf($VAR.text), - 1);
+            }
+        }
+    ;
+	
 st_call
     :
         VAR OP_PAR ( arguments ) ? CL_PAR // variable (n,b)
             {
 				if(!func_table.contains($VAR.text))
 				{
-					System.err.println("Function do not exists: " + $VAR.text); 
+					System.err.println("Error: function " + $VAR.text + " do not exists.");
 					has_error = true;
 				}
 				String qt_argumentos = "";
@@ -291,148 +390,76 @@ st_call
             }
     ;
 
-st_print
-    :   PRINT OP_PAR
-            { 
-                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
-            }
-            e1 = expression
-            {
-                if ($e1.type == 'i') 
-                {
-                    emit("    invokevirtual java/io/PrintStream/println(I)V", - 2);
-                } 
-                else 
-                {
-                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 2);
-                }
-            }
-        (COMMA
-            { 
-                emit("\n        getstatic java/lang/System/out Ljava/io/PrintStream;", + 1); 
-            }
-        e2 = expression
-            {
-                if ($e2.type == 'i') 
-                {
-                    emit("    invokevirtual java/io/PrintStream/println(I)V", - 2);
-                } 
-                else 
-                {
-                    emit("    invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V", - 2);
-                }
-            }
-        )* CL_PAR
-        {
-            emit("    getstatic java/lang/System/out Ljava/io/PrintStream;", + 1);
-            emit("    invokevirtual java/io/PrintStream/println()V", - 1);
-        }
-    ;
-
 st_new_list
         // variable = list()
     :   VAR
-        {
-            symbol_table.add($VAR.text);
-            int address = symbol_table.indexOf($VAR.text);
-        }
+			{
+				if (symbol_table.contains($VAR.text)) {
+					System.err.println("Error: List '" + $VAR.text + "' already declared.");
+					has_error = true;
+				}
+				symbol_table.add($VAR.text);
+				type_table.add('l');
+			}
         ATTRIB LIST OP_PAR CL_PAR
-        {
-            emit("    new List", + 1);
-            emit("    dup", + 1);
-            emit("    invokespecial List/<init>()V", - 1);
-            emit("    astore " + address + "\n", - 1);
-        }
+			{
+				emit("    new List", + 1);
+				emit("    dup", + 1);
+				emit("    invokespecial List/<init>()V", - 1);
+				emit("    astore " + symbol_table.indexOf($VAR.text) + "\n", - 1);
+			}
     ;
 
 st_list_append
         // variable . append ( expression )
     :   VAR
-        {
-            int address = symbol_table.indexOf($VAR.text);
-            emit("    aload " + address, + 1);
-        } 
-        DOT APPEND OP_PAR e = expression CL_PAR
-        {
-            emit("    invokevirtual List/append(I)V", - 2);
-        }
+			{
+				if (!symbol_table.contains($VAR.text)) 
+				{
+					System.err.println("Error: List '" + $VAR.text + "' not declared.");
+					has_error = true;
+				}
+			} 
+        DOT APPEND 
+			{
+				emit("aload " + symbol_table.indexOf($VAR.text), + 1);
+			}
+		OP_PAR e = expression CL_PAR
+			{
+				emit("    invokevirtual List/append(I)V", - 2);
+			}
     ;
 
 st_list_attrib
         // variable [ expression ] = expression
-    :   VAR 
-            {
-                int address = symbol_table.indexOf($VAR.text);
-                emit("    aload " + address + "\n", + 1);
-            }
-        OP_BRA e1 = expression 
-            {
-                if ($e1.type != 'i') 
-                {
-                    System.err.println("# error: list index must be integer");
-                    //System.exit(1);
-                }
-            }
+    :
+        VAR
+			{
+				if (!symbol_table.contains($VAR.text)) {
+					System.err.println("Error: List '" + $VAR.text + "' not declared.");
+					has_error = true;
+				}
+				if (type_table.get(symbol_table.indexOf($VAR.text)) != 'l') {
+					System.err.println("Error: '" + $VAR.text + "' is not List.");
+					has_error = true;
+				}
+				emit("aload " + symbol_table.indexOf($VAR.text), + 1);
+			}
+        OP_BRA e1 = expression
+			{
+				if ($e1.type != 'i') {
+					System.err.println("Error: index must be from Integer type.");
+					has_error = true;
+				}
+			}
         CL_BRA ATTRIB e2 = expression
-            {
-                if ($e1.type != 'i') 
-                {
-                    System.err.println("# error: list index must be integer");
-                    //System.exit(1);
-                }
-                emit("    invokevirtual List/set(II)V", - 3);
-            }
-    ;
-
-st_attrib
-    :   
-        VAR ATTRIB e = expression
-        {
-            if (!symbol_table.contains($VAR.text))
-            {
-                symbol_table.add($VAR.text);
-                type_table.add($e.type);
-                if($e.type == 'i')
-                {
-                    type_table.add('i');
-                }
-                else
-                {
-                    type_table.add('a');
-                }
-            }
-            else 
-            {
-                System.err.println("# error: '" + $VAR.text + "' is already declared");
-            }
-
-            int address = symbol_table.indexOf($VAR.text);
-            
-            if ($e.type == 'i')
-            {
-                if(type_table.get(address) == 'i')
-                {
-                    emit("    istore " + address + "\n", - 1);
-                }
-                else
-                {
-                    System.err.println("A variável " + $VAR.text + " está com o tipo incorreto! [Linha " + $VAR.line + "]");
-                    has_error = true;
-                }
-            }
-            else
-            {
-                if(type_table.get(address) == 'a')
-                {
-                    emit("    astore " + address + "\n", - 1);
-                }
-                else
-                {
-                    System.err.println("A variável " + $VAR.text + " está com o tipo incorreto! [Linha " + $VAR.line + "]");
-                    has_error=true;
-                }
-            }
-        }
+			{
+				if ($e2.type != 'i' && $e2.type != 's') {
+					System.err.println("Error: incompatible type.");
+					has_error = true;
+				}
+				emit("invokevirtual List/set(II)V", - 3);
+			}
     ;
 
 st_if
@@ -536,27 +563,7 @@ term returns [char type]
          {$type = $f1.type;}
     ;
 
-st_return
-	:
-	RETURN e = expression
-		{
-			if(function_return == false)
-            {
-                System.err.println("Integer return not expected"); 
-                has_error = true;
-            }    
-            if($e.type == 'a')
-			{
-                System.err.println("Waited an integer on return"); 
-                has_error = true;
-            }
-            else
-			{
-                function_return_expected = false;
-                emit("ireturn", - 1);
-            } 
-		}
-	;
+
 	
 factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |   VAR |   READ_INT OP_PAR CL_PAR
     :   NUMBER
@@ -572,8 +579,9 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
             {
                 if (!symbol_table.contains($VAR.text)) 
                 {
-                    System.err.println("# error: '"+ $VAR.text +"' not defined");
-                    //System.exit(1);
+                    System.err.println("Error: variable '" + $VAR.text + "' not declared.");
+                    has_error = true;
+					//System.exit(1);
                 } else 
                 {
                     $type = 'i';
@@ -588,8 +596,8 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
             {
                 if (!symbol_table.contains($VAR.text)) 
                 {
-                    System.err.println("# error: '"+ $VAR.text +"' not defined");
-                    //System.exit(1);
+                     System.err.println("Error: variable '" + $VAR.text + "' not declared.");
+                    has_error = true;
                 } 
                 else 
                 {
@@ -599,7 +607,7 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
                     } 
                     else 
                     {
-                        emit("aload " + symbol_table.indexOf($VAR.text), + 1);
+                        emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
                     }
 
                     $type = type_table.get(symbol_table.indexOf($VAR.text));
@@ -610,7 +618,7 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
 				$type = 'i';
 				if(!func_table.contains($VAR.text))
 				{
-					System.err.println("Function do not exists: " + $VAR.text); 
+					System.err.println("Error: function " + $VAR.text + " do not exists.");
 					has_error = true;
 				}
 				String qt_argumentos = "";
@@ -639,6 +647,16 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
         // LEN (variable)
     |   LEN OP_PAR VAR CL_PAR
             {
+				if (!symbol_table.contains($VAR.text)) 
+				{
+					System.err.println("Error: variable '" + $VAR.text + "' not declared.");
+					has_error = true;
+				}
+				if (type_table.get(symbol_table.indexOf($VAR.text)) != 'l') 
+				{
+					System.err.println("Error: variable '" + $VAR.text + "' must be List.");
+					has_error = true;
+				}
                 $type = 'i';
                 emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
                 emit("    invokevirtual List/len()I", 0);
@@ -646,6 +664,16 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
         // STR (variable)
     |   STR OP_PAR VAR CL_PAR
             {
+				if (!symbol_table.contains($VAR.text)) 
+				{
+					System.err.println("Error: variable '" + $VAR.text + "' not declared.");
+					has_error = true;
+				}
+				if (type_table.get(symbol_table.indexOf($VAR.text)) != 'l') 
+				{
+					System.err.println("Error: variable '" + $VAR.text + "' must be List.");
+					has_error = true;
+				}
                 $type = 'a';
                 emit("    aload " + symbol_table.indexOf($VAR.text), + 1);
                 emit("    invokevirtual List/str()Ljava/lang/String;", 0);

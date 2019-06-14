@@ -70,15 +70,15 @@ public interface SauroListener extends ParseTreeListener {
 	 */
 	void exitStatement(SauroParser.StatementContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SauroParser#st_call}.
+	 * Enter a parse tree produced by {@link SauroParser#st_return}.
 	 * @param ctx the parse tree
 	 */
-	void enterSt_call(SauroParser.St_callContext ctx);
+	void enterSt_return(SauroParser.St_returnContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SauroParser#st_call}.
+	 * Exit a parse tree produced by {@link SauroParser#st_return}.
 	 * @param ctx the parse tree
 	 */
-	void exitSt_call(SauroParser.St_callContext ctx);
+	void exitSt_return(SauroParser.St_returnContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SauroParser#st_print}.
 	 * @param ctx the parse tree
@@ -89,6 +89,26 @@ public interface SauroListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSt_print(SauroParser.St_printContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SauroParser#st_attrib}.
+	 * @param ctx the parse tree
+	 */
+	void enterSt_attrib(SauroParser.St_attribContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#st_attrib}.
+	 * @param ctx the parse tree
+	 */
+	void exitSt_attrib(SauroParser.St_attribContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SauroParser#st_call}.
+	 * @param ctx the parse tree
+	 */
+	void enterSt_call(SauroParser.St_callContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SauroParser#st_call}.
+	 * @param ctx the parse tree
+	 */
+	void exitSt_call(SauroParser.St_callContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SauroParser#st_new_list}.
 	 * @param ctx the parse tree
@@ -119,16 +139,6 @@ public interface SauroListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSt_list_attrib(SauroParser.St_list_attribContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link SauroParser#st_attrib}.
-	 * @param ctx the parse tree
-	 */
-	void enterSt_attrib(SauroParser.St_attribContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SauroParser#st_attrib}.
-	 * @param ctx the parse tree
-	 */
-	void exitSt_attrib(SauroParser.St_attribContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SauroParser#st_if}.
 	 * @param ctx the parse tree
@@ -169,16 +179,6 @@ public interface SauroListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTerm(SauroParser.TermContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link SauroParser#st_return}.
-	 * @param ctx the parse tree
-	 */
-	void enterSt_return(SauroParser.St_returnContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SauroParser#st_return}.
-	 * @param ctx the parse tree
-	 */
-	void exitSt_return(SauroParser.St_returnContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SauroParser#factor}.
 	 * @param ctx the parse tree
