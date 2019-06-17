@@ -1,6 +1,6 @@
 @echo off
 
-C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" -cp "antlr-4.7.2.jar;." SauroParser < %1 > Test.j
+C:"\Program Files\Java\jdk1.8.0_181\bin\java.exe" -cp "antlr-4.7.2.jar;." SauroParser < %1 > Test.j
 IF %ERRORLEVEL% EQU 0 ( 
   goto jasmin
 ) ELSE ( 
@@ -8,7 +8,7 @@ IF %ERRORLEVEL% EQU 0 (
 )
 
 :jasmin
-C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" -jar jasmin-2.4.jar Test.j
+C:"\Program Files\Java\jdk1.8.0_181\bin\java.exe" -jar jasmin-2.4.jar Test.j
 IF %ERRORLEVEL% EQU 0 ( 
   goto test
 ) ELSE ( 
@@ -16,7 +16,7 @@ IF %ERRORLEVEL% EQU 0 (
 )
 
 :test
-C:"\Program Files\Java\jdk1.8.0_191\bin\java.exe" Test
+C:"\Program Files\Java\jdk1.8.0_181\bin\java.exe" Test
 IF %ERRORLEVEL% EQU 0 ( 
   goto sucesso
 ) ELSE ( 

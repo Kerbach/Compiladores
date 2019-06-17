@@ -9,8 +9,8 @@ IF %ERRORLEVEL% EQU 0 (
 )
 
 :exp
-C:"\Program Files\Java\jdk1.8.0_191\bin\javac.exe" -cp .;antlr-4.7.2.jar Sauro*.java
-C:"\Program Files\Java\jdk1.8.0_191\bin\javac.exe" Runtime.java
+C:"\Program Files\Java\jdk1.8.0_181\bin\javac.exe" -cp .;antlr-4.7.2.jar Sauro*.java
+C:"\Program Files\Java\jdk1.8.0_181\bin\javac.exe" Runtime.java
 IF %ERRORLEVEL% EQU 0 ( 
   goto sucesso
 ) ELSE ( 

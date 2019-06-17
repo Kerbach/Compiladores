@@ -105,6 +105,12 @@ public class SauroParser extends Parser {
 	public ATN getATN() { return _ATN; }
 
 
+		private static ArrayList<String> symbol_table;
+	    private static ArrayList<Character> type_table;
+	    private static ArrayList<String> func_table;
+		private static ArrayList<String> returns_table;
+	    private static ArrayList<Integer> args_table;
+		
 	    private static int stack_cur, stack_max, if_counter;
 	    private static int if_count = 0;
 	    private static int while_count = 0;
@@ -112,9 +118,9 @@ public class SauroParser extends Parser {
 		private static int num_param = 0;
 		private static boolean function_return, function_return_expected;
 		private static String r = "";
+		
 	    
 	    private static boolean has_error = false;
-
 	    public static void emit (String bytecode, int delta)
 	    {
 	        System.out.println("    " + bytecode);
@@ -125,10 +131,6 @@ public class SauroParser extends Parser {
 	        }
 	    }
 
-	    private static ArrayList<String> symbol_table;
-	    private static ArrayList<Character> type_table;
-	    private static ArrayList<String> func_table;
-
 	    public static void main(String[] args) throws Exception
 	    {
 	        CharStream input = CharStreams.fromStream(System.in);
@@ -137,21 +139,17 @@ public class SauroParser extends Parser {
 	        SauroParser parser = new SauroParser(tokens);
 
 	        has_error = false;
-
-	        // Tabela de Símbolos
 	        symbol_table = new ArrayList<String>();
 	        type_table = new ArrayList<Character>();
 	        func_table = new ArrayList<String>();
-
-	        //symbol_table.add("args");
-	        //type_table.add('-'); //tirei para colocar no main apenas
-	        
+			returns_table = new ArrayList<String>();
+	        args_table = new ArrayList<Integer>();
 	        parser.program();
 	        System.out.println("; symbols: " + symbol_table);
 
 	        if(has_error == true)
 			{
-	            System.err.println("Existem erros que precisam ser corrigidos!");
+	            System.err.println("\n ### Existem erros que precisam ser corrigidos! ###");
 	            System.exit(1);
 			}
 	    }
@@ -325,6 +323,8 @@ public class SauroParser extends Parser {
 			            if(!func_table.contains((((FunctionContext)_localctx).VAR!=null?((FunctionContext)_localctx).VAR.getText():null)))
 			            {
 			                func_table.add((((FunctionContext)_localctx).VAR!=null?((FunctionContext)_localctx).VAR.getText():null));
+							returns_table.add(r);
+			                args_table.add(symbol_table.size());
 			            }
 			            else
 			            {
@@ -346,17 +346,18 @@ public class SauroParser extends Parser {
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << IF) | (1L << WHILE) | (1L << PRINT) | (1L << RETURN) | (1L << VAR) | (1L << NL))) != 0) );
-			setState(65);
-			match(DEDENT);
 
-			            System.out.println("        return");              
+						System.out.println("        return");              
 			            System.out.println(".limit locals " + symbol_table.size());
 			            System.out.println(".limit stack " + stack_max);
 			            System.out.println(".end method");
 			            stack_max = 0;
 			            symbol_table.clear();
-			            type_table.clear(); 				
-			        
+			            type_table.clear(); 	
+
+					
+			setState(66);
+			match(DEDENT);
 			}
 		}
 		catch (RecognitionException re) {
@@ -422,12 +423,14 @@ public class SauroParser extends Parser {
 				setState(71);
 				((ParametersContext)_localctx).VAR = match(VAR);
 
-				            if (!symbol_table.contains((((ParametersContext)_localctx).VAR!=null?((ParametersContext)_localctx).VAR.getText():null)))
-				            {
-								num_param++;
-				                symbol_table.add((((ParametersContext)_localctx).VAR!=null?((ParametersContext)_localctx).VAR.getText():null));
-				                type_table.add('i');
+				            if (symbol_table.contains((((ParametersContext)_localctx).VAR!=null?((ParametersContext)_localctx).VAR.getText():null))) {
+				                System.err.println("error: parameter names must be unique");
+				                has_error = true;
 				            }
+
+				            num_param++;
+				            symbol_table.add((((ParametersContext)_localctx).VAR!=null?((ParametersContext)_localctx).VAR.getText():null));
+				            type_table.add('i');
 				        
 				}
 				}
@@ -490,7 +493,7 @@ public class SauroParser extends Parser {
 						num_args = 1;
 						if(((ArgumentsContext)_localctx).e1.type != 'i')
 						{
-			                System.err.println("Error: only Integer values allowed.");
+			                System.err.println("error: all arguments must be integer");
 			                has_error = true;
 						}
 			        
@@ -508,7 +511,7 @@ public class SauroParser extends Parser {
 							num_args++;
 				            if(((ArgumentsContext)_localctx).e2.type != 'i')
 							{
-				                System.err.println("Error: only Integer values allowed.");
+				                System.err.println("error: all arguments must be integer");
 				                has_error = true;
 							}		
 				        
@@ -763,12 +766,12 @@ public class SauroParser extends Parser {
 
 						if(function_return == false)
 			            {
-			                System.err.println("Error: return not expected.");
+			                System.err.println("error: missing return statement in returning function");
 			                has_error = true;
-			            }    
+			            }
 			            if(((St_returnContext)_localctx).e.type != 'i')
 						{
-			                System.err.println("Error: expected Integer on return.");
+			                System.err.println("error: return value must be of integer type.");
 			                has_error = true;
 			            }
 			            else
@@ -946,10 +949,15 @@ public class SauroParser extends Parser {
 			            } 
 						else 
 						{
-			                if (type_table.get(symbol_table.indexOf((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null))) != ((St_attribContext)_localctx).e.type) 
+			                if (type_table.get(symbol_table.indexOf((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null))) != ((St_attribContext)_localctx).e.type && type_table.get(symbol_table.indexOf((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null))) == 'i') 
 							{
-			                   System.err.println("Error: impossible to change variable type.");
+			                   System.err.println("error: '"+(((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null)+"' is integer");
 			                   has_error = true;
+			                }
+			                else if (type_table.get(symbol_table.indexOf((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null))) != ((St_attribContext)_localctx).e.type && type_table.get(symbol_table.indexOf((((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null))) == 'a') 
+			                {
+			                    System.err.println("error: '"+(((St_attribContext)_localctx).VAR!=null?((St_attribContext)_localctx).VAR.getText():null)+"' is string");
+			                    has_error = true;
 			                }
 			            }
 
@@ -1026,6 +1034,18 @@ public class SauroParser extends Parser {
 								System.err.println("Error: function " + (((St_callContext)_localctx).VAR!=null?((St_callContext)_localctx).VAR.getText():null) + " do not exists.");
 								has_error = true;
 							}
+							if (returns_table.get(func_table.indexOf((((St_callContext)_localctx).VAR!=null?((St_callContext)_localctx).VAR.getText():null))).equals("I")) 
+							{
+								System.err.println("error: return value cannot be ignored");
+								has_error = true;
+							}
+							
+							if (args_table.get(func_table.indexOf((((St_callContext)_localctx).VAR!=null?((St_callContext)_localctx).VAR.getText():null))) != num_args)
+							{
+								System.err.println("error: wrong number of arguments");
+								has_error = true;
+							}
+							
 							String qt_argumentos = "";
 							for (int i = 0; i < num_args; i++)
 							{ 
@@ -1077,7 +1097,8 @@ public class SauroParser extends Parser {
 			setState(144);
 			((St_new_listContext)_localctx).VAR = match(VAR);
 
-							if (symbol_table.contains((((St_new_listContext)_localctx).VAR!=null?((St_new_listContext)_localctx).VAR.getText():null))) {
+							if (symbol_table.contains((((St_new_listContext)_localctx).VAR!=null?((St_new_listContext)_localctx).VAR.getText():null))) 
+							{
 								System.err.println("Error: List '" + (((St_new_listContext)_localctx).VAR!=null?((St_new_listContext)_localctx).VAR.getText():null) + "' already declared.");
 								has_error = true;
 							}
@@ -1218,7 +1239,7 @@ public class SauroParser extends Parser {
 			((St_list_attribContext)_localctx).VAR = match(VAR);
 
 							if (!symbol_table.contains((((St_list_attribContext)_localctx).VAR!=null?((St_list_attribContext)_localctx).VAR.getText():null))) {
-								System.err.println("Error: List '" + (((St_list_attribContext)_localctx).VAR!=null?((St_list_attribContext)_localctx).VAR.getText():null) + "' not declared.");
+								System.err.println("Error: variable '" + (((St_list_attribContext)_localctx).VAR!=null?((St_list_attribContext)_localctx).VAR.getText():null) + "' not declared.");
 								has_error = true;
 							}
 							if (type_table.get(symbol_table.indexOf((((St_list_attribContext)_localctx).VAR!=null?((St_list_attribContext)_localctx).VAR.getText():null))) != 'l') {
@@ -1341,6 +1362,11 @@ public class SauroParser extends Parser {
 			                else if ((((St_ifContext)_localctx).op!=null?((St_ifContext)_localctx).op.getType():0) == LT) { emit("\nif_icmpge NOT_IF_" + if_count, -2); }
 			                else if ((((St_ifContext)_localctx).op!=null?((St_ifContext)_localctx).op.getType():0) == LE) { emit("\nif_icmpgt NOT_IF_" + if_count, -2); }
 			            }
+						else if (((St_ifContext)_localctx).e1.type == 'l' || ((St_ifContext)_localctx).e2.type == 'l')
+						{
+							System.err.println("Error: cannot use List without index.");
+							has_error = true;
+						}
 			            else
 			            {
 			                System.err.println("# error: cannot mix types. -> " + (((St_ifContext)_localctx).e1!=null?_input.getText(((St_ifContext)_localctx).e1.start,((St_ifContext)_localctx).e1.stop):null) + " and " + (((St_ifContext)_localctx).e2!=null?_input.getText(((St_ifContext)_localctx).e2.start,((St_ifContext)_localctx).e2.stop):null) + "! [Line " + (((St_ifContext)_localctx).op!=null?((St_ifContext)_localctx).op.getLine():0) + "]");
@@ -1459,6 +1485,11 @@ public class SauroParser extends Parser {
 			                else if ((((St_whileContext)_localctx).op!=null?((St_whileContext)_localctx).op.getType():0) == GE) { emit("\nif_icmplt END_WHILE_" + while_count, -2); }
 			                else if ((((St_whileContext)_localctx).op!=null?((St_whileContext)_localctx).op.getType():0) == LT) { emit("\nif_icmpge END_WHILE_" + while_count, -2); }
 			                else if ((((St_whileContext)_localctx).op!=null?((St_whileContext)_localctx).op.getType():0) == LE) { emit("\nif_icmpgt END_WHILE_" + while_count, -2); }		
+						}
+						else if (((St_whileContext)_localctx).e1.type == 'l' || ((St_whileContext)_localctx).e2.type == 'l')
+						{
+							System.err.println("Error: cannot use List without index.");
+							has_error = true;
 						}
 						else
 						{
@@ -1851,6 +1882,20 @@ public class SauroParser extends Parser {
 									System.err.println("Error: function " + (((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null) + " do not exists.");
 									has_error = true;
 								}
+								
+								if (returns_table.get(func_table.indexOf((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null))).equals("V")) 
+								{
+									System.err.println("error: void function does not return a value.");
+									//System.exit(1);
+				                    has_error = true;
+								}
+
+				                if (args_table.get(func_table.indexOf((((FactorContext)_localctx).VAR!=null?((FactorContext)_localctx).VAR.getText():null))) != num_args)
+				                {
+				                    System.err.println("error: wrong number of arguments");
+				                    has_error = true;
+				                }
+								
 								String qt_argumentos = "";
 								for (int i = 0; i < num_args; i++)
 								{ 
@@ -2002,7 +2047,7 @@ public class SauroParser extends Parser {
 		"\7\22\2\2\63\65\5\6\4\2\64\63\3\2\2\2\64\65\3\2\2\2\65\66\3\2\2\2\669"+
 		"\7\23\2\2\678\7\"\2\28:\b\3\1\29\67\3\2\2\29:\3\2\2\2:;\3\2\2\2;<\7\26"+
 		"\2\2<=\7*\2\2=?\b\3\1\2>@\5\f\7\2?>\3\2\2\2@A\3\2\2\2A?\3\2\2\2AB\3\2"+
-		"\2\2BC\3\2\2\2CD\7+\2\2DE\b\3\1\2E\5\3\2\2\2FG\7%\2\2GM\b\4\1\2HI\7\25"+
+		"\2\2BC\3\2\2\2CD\b\3\1\2DE\7+\2\2E\5\3\2\2\2FG\7%\2\2GM\b\4\1\2HI\7\25"+
 		"\2\2IJ\7%\2\2JL\b\4\1\2KH\3\2\2\2LO\3\2\2\2MK\3\2\2\2MN\3\2\2\2N\7\3\2"+
 		"\2\2OM\3\2\2\2PQ\5 \21\2QX\b\5\1\2RS\7\25\2\2ST\5 \21\2TU\b\5\1\2UW\3"+
 		"\2\2\2VR\3\2\2\2WZ\3\2\2\2XV\3\2\2\2XY\3\2\2\2Y\t\3\2\2\2ZX\3\2\2\2[]"+

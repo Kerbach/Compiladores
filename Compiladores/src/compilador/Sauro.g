@@ -42,6 +42,12 @@ COMANDOS TERMINAL
 
 @parser::members
 {
+	private static ArrayList<String> symbol_table;
+    private static ArrayList<Character> type_table;
+    private static ArrayList<String> func_table;
+	private static ArrayList<String> returns_table;
+    private static ArrayList<Integer> args_table;
+	
     private static int stack_cur, stack_max, if_counter;
     private static int if_count = 0;
     private static int while_count = 0;
@@ -49,9 +55,9 @@ COMANDOS TERMINAL
 	private static int num_param = 0;
 	private static boolean function_return, function_return_expected;
 	private static String r = "";
+	
     
     private static boolean has_error = false;
-
     public static void emit (String bytecode, int delta)
     {
         System.out.println("    " + bytecode);
@@ -62,10 +68,6 @@ COMANDOS TERMINAL
         }
     }
 
-    private static ArrayList<String> symbol_table;
-    private static ArrayList<Character> type_table;
-    private static ArrayList<String> func_table;
-
     public static void main(String[] args) throws Exception
     {
         CharStream input = CharStreams.fromStream(System.in);
@@ -74,21 +76,17 @@ COMANDOS TERMINAL
         SauroParser parser = new SauroParser(tokens);
 
         has_error = false;
-
-        // Tabela de Símbolos
         symbol_table = new ArrayList<String>();
         type_table = new ArrayList<Character>();
         func_table = new ArrayList<String>();
-
-        //symbol_table.add("args");
-        //type_table.add('-'); //tirei para colocar no main apenas
-        
+		returns_table = new ArrayList<String>();
+        args_table = new ArrayList<Integer>();
         parser.program();
         System.out.println("; symbols: " + symbol_table);
 
         if(has_error == true)
 		{
-            System.err.println("Existem erros que precisam ser corrigidos!");
+            System.err.println("\n ### Existem erros que precisam ser corrigidos! ###");
             System.exit(1);
 		}
     }
@@ -188,6 +186,8 @@ function
             if(!func_table.contains($VAR.text))
             {
                 func_table.add($VAR.text);
+				returns_table.add(r);
+                args_table.add(symbol_table.size());
             }
             else
             {
@@ -195,16 +195,18 @@ function
                 has_error = true;
             }
         }
-    (statement)+ DEDENT
-        {
-            System.out.println("        return");              
+    (statement)+ 
+		{
+			System.out.println("        return");              
             System.out.println(".limit locals " + symbol_table.size());
             System.out.println(".limit stack " + stack_max);
             System.out.println(".end method");
             stack_max = 0;
             symbol_table.clear();
-            type_table.clear(); 				
-        }
+            type_table.clear(); 	
+
+		}
+	DEDENT
     ;
 
 parameters
@@ -220,14 +222,24 @@ parameters
         }
     ( COMMA VAR 
         {
-            if (!symbol_table.contains($VAR.text))
-            {
-				num_param++;
-                symbol_table.add($VAR.text);
-                type_table.add('i');
+            if (symbol_table.contains($VAR.text)) {
+                System.err.println("error: parameter names must be unique");
+                has_error = true;
             }
+
+            num_param++;
+            symbol_table.add($VAR.text);
+            type_table.add('i');
         }
     )*
+        /*
+        {
+            if (args_table.get(func_table.indexOf($VAR.text)) != num_args)
+            {
+                System.err.println("error: wrong number of arguments");
+                has_error = true;
+            }
+        } */
 	;
 
 arguments
@@ -237,7 +249,7 @@ arguments
 			num_args = 1;
 			if($e1.type != 'i')
 			{
-                System.err.println("Error: only Integer values allowed.");
+                System.err.println("error: all arguments must be integer");
                 has_error = true;
 			}
         } 
@@ -246,7 +258,7 @@ arguments
 			num_args++;
             if($e2.type != 'i')
 			{
-                System.err.println("Error: only Integer values allowed.");
+                System.err.println("error: all arguments must be integer");
                 has_error = true;
 			}		
         } 
@@ -278,12 +290,12 @@ st_return
 		{
 			if(function_return == false)
             {
-                System.err.println("Error: return not expected.");
+                System.err.println("error: missing return statement in returning function");
                 has_error = true;
-            }    
+            }
             if($e.type != 'i')
 			{
-                System.err.println("Error: expected Integer on return.");
+                System.err.println("error: return value must be of integer type.");
                 has_error = true;
             }
             else
@@ -353,10 +365,15 @@ st_attrib
             } 
 			else 
 			{
-                if (type_table.get(symbol_table.indexOf($VAR.text)) != $e.type) 
+                if (type_table.get(symbol_table.indexOf($VAR.text)) != $e.type && type_table.get(symbol_table.indexOf($VAR.text)) == 'i') 
 				{
-                   System.err.println("Error: impossible to change variable type.");
+                   System.err.println("error: '"+$VAR.text+"' is integer");
                    has_error = true;
+                }
+                else if (type_table.get(symbol_table.indexOf($VAR.text)) != $e.type && type_table.get(symbol_table.indexOf($VAR.text)) == 'a') 
+                {
+                    System.err.println("error: '"+$VAR.text+"' is string");
+                    has_error = true;
                 }
             }
 
@@ -380,6 +397,18 @@ st_call
 					System.err.println("Error: function " + $VAR.text + " do not exists.");
 					has_error = true;
 				}
+				if (returns_table.get(func_table.indexOf($VAR.text)).equals("I")) 
+				{
+					System.err.println("error: return value cannot be ignored");
+					has_error = true;
+				}
+				
+				if (args_table.get(func_table.indexOf($VAR.text)) != num_args)
+				{
+					System.err.println("error: wrong number of arguments");
+					has_error = true;
+				}
+				
 				String qt_argumentos = "";
 				for (int i = 0; i < num_args; i++)
 				{ 
@@ -394,7 +423,8 @@ st_new_list
         // variable = list()
     :   VAR
 			{
-				if (symbol_table.contains($VAR.text)) {
+				if (symbol_table.contains($VAR.text)) 
+				{
 					System.err.println("Error: List '" + $VAR.text + "' already declared.");
 					has_error = true;
 				}
@@ -436,7 +466,7 @@ st_list_attrib
         VAR
 			{
 				if (!symbol_table.contains($VAR.text)) {
-					System.err.println("Error: List '" + $VAR.text + "' not declared.");
+					System.err.println("Error: variable '" + $VAR.text + "' not declared.");
 					has_error = true;
 				}
 				if (type_table.get(symbol_table.indexOf($VAR.text)) != 'l') {
@@ -479,6 +509,11 @@ st_if
                 else if ($op.type == LT) { emit("\nif_icmpge NOT_IF_" + if_count, -2); }
                 else if ($op.type == LE) { emit("\nif_icmpgt NOT_IF_" + if_count, -2); }
             }
+			else if ($e1.type == 'l' || $e2.type == 'l')
+			{
+				System.err.println("Error: cannot use List without index.");
+				has_error = true;
+			}
             else
             {
                 System.err.println("# error: cannot mix types. -> " + $e1.text + " and " + $e2.text + "! [Line " + $op.line + "]");
@@ -506,6 +541,11 @@ st_while
                 else if ($op.type == GE) { emit("\nif_icmplt END_WHILE_" + while_count, -2); }
                 else if ($op.type == LT) { emit("\nif_icmpge END_WHILE_" + while_count, -2); }
                 else if ($op.type == LE) { emit("\nif_icmpgt END_WHILE_" + while_count, -2); }		
+			}
+			else if ($e1.type == 'l' || $e2.type == 'l')
+			{
+				System.err.println("Error: cannot use List without index.");
+				has_error = true;
 			}
 			else
 			{
@@ -621,6 +661,20 @@ factor returns [char type]             // NUMBER  |   OP_PAR expression CL_PAR |
 					System.err.println("Error: function " + $VAR.text + " do not exists.");
 					has_error = true;
 				}
+				
+				if (returns_table.get(func_table.indexOf($VAR.text)).equals("V")) 
+				{
+					System.err.println("error: void function does not return a value.");
+					//System.exit(1);
+                    has_error = true;
+				}
+
+                if (args_table.get(func_table.indexOf($VAR.text)) != num_args)
+                {
+                    System.err.println("error: wrong number of arguments");
+                    has_error = true;
+                }
+				
 				String qt_argumentos = "";
 				for (int i = 0; i < num_args; i++)
 				{ 

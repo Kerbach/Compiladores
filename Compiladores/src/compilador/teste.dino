@@ -1,10 +1,10 @@
-# errors for simple functions
+# test for complete function using recursion
+# result: 120
 
-def test():
-    x = 1
+def factorial(n) int :
+    if n <= 1:
+        return 1
+    return n * factorial(n - 1)
 
-def test(): # error: procedure 'test' is already declared
-    y = 1
+print(factorial(5))
 
-test()
-sort() # error: procedure 'sort' is not declared
